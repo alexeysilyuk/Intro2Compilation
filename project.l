@@ -1,4 +1,3 @@
-/* DECLARATIONS */
 DIG   [0-9]
 DIGWZ [1-9]
 OCT   [0-7]
@@ -11,17 +10,16 @@ WHITESPACE [ \t\n]
 
 %{
 #include <stdio.h>
-#include "y.tab.h"
 
-extern void yyerror(const char *);
-
-static void comment(void);
+extern void yyerror(const char *);  /* prints grammar violation message */
+static void comment_check(void);
 
 %}
+%option yylineno
 %%
 
 boolean return BOOLEAN_TYPE;
-char return CHAR_TYPE'
+char return CHAR_TYPE;
 void return VOID;
 int return INT;
 string return STRING;
@@ -37,7 +35,7 @@ for return FOR;
 
 
 return return RETURN;
-null return NULL;
+null return _NULL;
 
 
 "&&" return AND;
@@ -55,23 +53,23 @@ null return NULL;
 "+" return PLUS;
 "*" return MULT;
 "&" return BITWISE_AND;
-"^" return BITWISE_XOR
+"^" return BITWISE_XOR;
 
 
 
-true|false 		return CONSTANT_VALUE;
-"\'"{LETTER}"\'" 	return CONSTANT_VALUE;
-{BIN}+"b"    		return CONSTANT_VALUE;
-'0'{OCT}*    		return CONSTANT_VALUE;
-{DIGWZ}{DIG}*		return CONSTANT_VALUE;
-{HEXPREF}{HEX}+		return CONSTANT_VALUE;
+true|false 		{printf("bool"); return CONSTANT_VALUE;}
+{BIN}+"b"    		{printf("bin"); return CONSTANT_VALUE;}
+'0'{OCT}*    		{printf("oct"); return CONSTANT_VALUE;}
+{DIGWZ}{DIG}*		{printf("int"); return CONSTANT_VALUE;}
+{HEXPREF}{HEX}+		{printf("hex"); return CONSTANT_VALUE;}
 
 {VARPREF}({LETTER}|{DIG}|[_])* return IDENTIFIER;
 
 
-([\\\ ?!.,/@#$%^&*\n+=-_<>`~]|{LETTER}|{DIG})* return STRING_VALUE;
+"\""([\\\ ?!.,/@#$%^&*\n+=-_<>`~]|{LETTER}|{DIG})*"\""  return STRING_VALUE;
+"\'"([\\\ ?!.,/@#$%^&*\n+=-_<>`~]|{LETTER}|{DIG})"\'"	return STRING_LITERAL;
 
-'&'{HEXPREF}{HEX}+	return POINTER;
+'&'{HEXPREF}{HEX}+	return POINTER_ADDRESS;
 
 
 ";" 	return ';';
@@ -85,18 +83,18 @@ true|false 		return CONSTANT_VALUE;
 "]"	return ']'; 
 
 
-"/*"                                    { comment(); }
-"//".*                                  { /* ignore text after // */ }
+"/*"                                    { comment_check(); };
+"//".*                                  { /* ignore text after // */ };
 
 
-{WHITESPACE}+				{ /* ignore spaces */ }
-.					{ /* ignore bad symbols */ }
+{WHITESPACE}+				{ /* ignore spaces */ };
+.|\n 					{ printf("other %s\n",yytext); /* ignore bad symbols */ };
 
 
 
 %%
 
-static void comment()
+static void comment_check()
 {
     int current_char;
 
