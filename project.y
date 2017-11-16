@@ -1,4 +1,11 @@
 %start program
+%{
+	#define YYPRINT(file, type, value) fprint(file, "%d", value);
+
+%}
+%left MINUS_OP,  PLUS_OP
+%left DIVISION_OP, MULT_OP
+
 %token BOOLEAN_TYPE
 %token CHAR_TYPE
 %token VOID
@@ -13,23 +20,48 @@
 %token FOR
 %token RETURN
 %token _NULL
-%token AND, RIGHT_SLASH, ASSIGNMENT, COMPARATION, GREAT_THEN, GREAT_EQUAL, LESS_THEN
-%token LESS_EQUAL, MINUS, NOT, NOT_EQUAL, OR, PLUS, MULT,BITWISE_AND, BITWISE_XOR
-%token CONSTANT_VALUE, IDENTIFIER, STRING_VALUE, STRING_LITERAL, POINTER_ADDRESS
+%token AND, DIVISION_OP, ASSIGNMENT, COMPARATION, GREAT_THEN, GREAT_EQUAL, LESS_THEN
+%token LESS_EQUAL, MINUS_OP, NOT, NOT_EQUAL, OR, PLUS_OP, MULT_OP,BITWISE_AND, BITWISE_XOR
+%token IDENTIFIER, STRING_VALUE, CHAR_LITERAL, POINTER_ADDRESS
+%token INT_CONSTANT_VALUE, BOOL_CONSTANT_VALUE, BIN_CONSTANT_VALUE, OCT_CONSTANT_VALUE, HEX_CONSTANT_VALUE
 %%
 program
-	:head_declaration
+	:head_declaration {printf("Done\n");}
 	|program head_declaration 
 	;
 
 head_declaration
 	:declaration
-	/*|function_define*/
+	|function_declaration
 	;
 
 declaration
-	:type ';'
-	|type list_of_declarators ';'
+	:type list_of_declarators ';'
+	;
+
+function_declaration
+	:builtin_function_declaration
+	|user_function
+	;
+
+builtin_function_declaration
+	: if_block
+	| for_block
+	| while_block
+	| do_while_block
+	;
+
+if_block
+	: IF '(' /*expr*/ ')' line_statement
+	| IF '(' expr ')' '{' program '}'
+	| if_block ELSE statement
+	| if_block ELSE '{' program '}'
+	;
+
+line_statement
+	: declarator_initialization
+	| complex_expression ';'
+	| RETURN complex_expression ';'
 	;
 
 list_of_declarators
@@ -38,30 +70,64 @@ list_of_declarators
 	;
 
 declarator_initialization
-	:declarator 
-	|declarator '=' initializator 
+	:declarator ASSIGNMENT initializator 
+	|declarator
 	;
 
-declarator
-	:IDENTIFIER {printf("YACC_DEC_ID\n");}
-	|'(' declarator ')'
-	|declarator '(' ')'
-	|declarator '(' identifiers_list ')'
-	|declarator '(' params_types_list ')'
-	/*|declarator '[' ']'*/
-	|declarator '[' array_size ']'
+
+initializator
+	: BITWISE_AND IDENTIFIER	
+	| BITWISE_XOR IDENTIFIER
+	|_NULL	
+	|complex_expression
+	;
+
+
+complex_expression
+	:basic_expression
+	|basic_expression operator complex_expression
+	;
+
+basic_expression
+	:function_result
+	|terminal_const_values
+	|IDENTIFIER
+	|IDENTIFIER '[' INT_CONSTANT_VALUE ']'
+	| '|' IDENTIFIER '|'
+	;
+
+function_result
+	:IDENTIFIER '(' ')'
+	|IDENTIFIER '(' parameters_list ')' 
 	;
 	
-array_size
-	:CONSTANT_VALUE
-	|array_size ',' CONSTANT_VALUE
+parameters_list
+	:complex_expression
+	|complex_expression ',' parameters_list
 	;
 
-identifiers_list
+terminal_const_values
+	:INT_CONSTANT_VALUE
+	|BOOL_CONSTANT_VALUE
+	|BIN_CONSTANT_VALUE
+	|OCT_CONSTANT_VALUE
+	|HEX_CONSTANT_VALUE
+	|literals
+	;
+
+literals
+	: CHAR_LITERAL
+	| STRING_VALUE
+	;
+
+
+declarator
 	:IDENTIFIER
-	|identifiers_list ',' IDENTIFIER
+	|declarator '(' ')'
+	|declarator '(' params_types_list ')'
+	|declarator '[' ']'
+	|declarator '[' array_size ']'
 	;
-
 
 params_types_list
 	:type
@@ -70,48 +136,51 @@ params_types_list
 	|params_types_list ',' type IDENTIFIER
 	;
 	
+	
 
-initializator
-	:assignment_expression	{printf("INIT\n");}
-	| "&"IDENTIFIER	
-	| "^"IDENTIFIER
+array_size
+	:array_size ',' INT_CONSTANT_VALUE
+	|complex_expression
 	;
 
-assignment_expression
-	: basic_expression 	
-	;
+/*numeric_expression
+	:'(' numeric_expression ')'
+	|'(' numeric_expression ')' operator numeric_expression
+	|numeric_expression PLUS_OP numeric_expression {$$=$1+$3;}
+	|numeric_expression MINUS_OP numeric_expression {$$=$1-$3;}
+	|numeric_expression MULT_OP numeric_expression {$$=$1*$3;}
+	|numeric_expression DIVISION_OP numeric_expression {$$=$1/$3;}
+	|INT_CONSTANT_VALUE {$$=$1;}
+	; 
+*/
 
-basic_expression
-	: IDENTIFIER 
-	| CONSTANT_VALUE 
-	| STRING_LITERAL
-	| '(' expression ')'
-	;
-
-expression
-	:assignment_expression
-	|expression ',' assignment_expression	
-	;
 
 
 type
-	:BOOLEAN_TYPE {printf("boolean\n");}
-	|CHAR_TYPE {printf("char\n");}
-	|VOID {printf("void\n");}
-	|INT  {printf("int\n");}
-	|STRING_VALUE {printf("string\n");} 
-	|INTP {printf("intp\n");}   
-	|CHARP{printf("charp\n");}
-	|STRING_LITERAL {printf("char\n");}
+	:BOOLEAN_TYPE 
+	|CHAR_TYPE
+	|VOID
+	|INT
+	|INTP    
+	|CHARP
+	|STRING
 	;
-/*function   
-	:IF   {printf("if");}   
+
+operator
+	:MINUS_OP
+	|PLUS_OP
+	|DIVISION_OP
+	|MULT_OP
+	;
+
+builtin_function   
+	:IF    
 	|ELSE {printf("else");}   
 	|WHILE{printf("while");}   
 	|DO   {printf("do");}   
 	|FOR  {printf("for");}
 	;
-
+/*
 others
 	:RETURN {printf("return");}   
 	|_NULL {printf("null");}
@@ -125,4 +194,4 @@ void yyerror(const char *s)
 	printf("*** %s\n", s);
 }
 
-int main(){return yyparse(); }
+int main(){yydebug=1; return yyparse(); }
