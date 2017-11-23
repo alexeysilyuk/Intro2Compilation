@@ -1,9 +1,14 @@
 
-int x =1, y=x, z=fuu();
-x = x[2];
-if (c==true)
+/*int x =1, y=x, z=fuu();
+x = x[2];*/
+
+if ( (!(x<=10)) )
 	x=x[5];
-if (c==true)
+
+
+
+
+/*if (c==true)
 	{ x=x[5];
 	y=x; }
 if (c==true)
@@ -29,7 +34,7 @@ while(c==true);
 
 
 for( x=1 ; x<2 ; x=x+1 )
- x=2;
+ x=2;*/
 /*
 for(x=1,y=1; x>0 ; x=x+1)
 	x=2;*/

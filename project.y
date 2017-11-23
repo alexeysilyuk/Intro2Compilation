@@ -114,8 +114,16 @@ for_block_boolean_expr
 
 /* MUST FINISH */
 boolean_expr
-	: basic_expression
-	| basic_expression boolean_operator boolean_expr 
+	:boolean_expr_simple
+	|/*boolean_expr_simple AND boolean_expr*/
+	|boolean_expr_simple OR boolean_expr
+	;
+
+boolean_expr_simple
+	: complex_expression
+	| complex_expression boolean_operator boolean_expr
+	| '(' complex_expression boolean_operator boolean_expr ')'
+	| NOT '(' complex_expression boolean_operator boolean_expr ')'
 	;
 
 
