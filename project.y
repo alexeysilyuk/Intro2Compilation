@@ -115,7 +115,7 @@ for_block_boolean_expr
 /* MUST FINISH */
 boolean_expr
 	:boolean_expr_simple
-	|/*boolean_expr_simple AND boolean_expr*/
+	|boolean_expr_simple AND boolean_expr
 	|boolean_expr_simple OR boolean_expr
 	;
 
