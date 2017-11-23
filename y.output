@@ -1,0 +1,2342 @@
+   0  $accept : main $end
+
+   1  main : program
+
+   2  program : head_declaration
+   3          | head_declaration program
+
+   4  head_declaration : line_statement
+   5                   | functions
+
+   6  declaration : type list_of_declarators
+
+   7  line_statement : line_statement ';'
+   8                 | declaration
+   9                 | declarator_initialization
+  10                 | RETURN complex_expression
+
+  11  functions : builtin_functions
+  12            | user_function
+
+  13  builtin_functions : if_block
+  14                    | loop_functions
+
+  15  loop_functions : for_block
+  16                 | do_while_block
+  17                 | while_block
+
+  18  if_block : IF '(' boolean_expr ')' line_statement
+  19           | IF '(' boolean_expr ')' '{' program '}'
+  20           | IF '(' boolean_expr ')' line_statement else_block
+  21           | IF '(' boolean_expr ')' '{' program '}' else_block
+
+  22  else_block : ELSE line_statement
+  23             | ELSE '{' program '}'
+
+  24  while_block : WHILE '(' boolean_expr ')' line_statement
+  25              | WHILE '(' boolean_expr ')' '{' program '}'
+
+  26  do_while_block : DO line_statement WHILE '(' boolean_expr ')' ';'
+  27                 | DO '{' program '}' WHILE '(' boolean_expr ')' ';'
+
+  28  for_block : FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' line_statement
+  29            | FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' '{' program '}'
+
+  30  for_block_inits : for_block_single_init
+  31                  | for_block_single_init ',' for_block_inits
+
+  32  for_block_single_init : IDENTIFIER ASSIGNMENT initializator
+
+  33  for_block_inits_update : IDENTIFIER ASSIGNMENT initializator
+  34                         | IDENTIFIER ASSIGNMENT initializator ',' for_block_inits_update
+
+  35  for_block_boolean_expr : boolean_expr
+  36                         | boolean_expr ',' for_block_boolean_expr
+
+  37  boolean_expr : boolean_expr_simple
+  38               | boolean_expr_simple AND boolean_expr
+  39               | boolean_expr_simple OR boolean_expr
+
+  40  boolean_expr_simple : complex_expression
+  41                      | complex_expression boolean_operator boolean_expr
+  42                      | '(' complex_expression boolean_operator boolean_expr ')'
+  43                      | NOT '(' complex_expression boolean_operator boolean_expr ')'
+
+  44  list_of_declarators : declarator_initialization
+  45                      | list_of_declarators ',' declarator_initialization
+
+  46  declarator_initialization : declarator ASSIGNMENT initializator
+  47                            | declarator
+
+  48  initializator : BITWISE_AND IDENTIFIER
+  49                | BITWISE_XOR IDENTIFIER
+  50                | _NULL
+  51                | complex_expression
+
+  52  complex_expression : '(' complex_expression ')'
+  53                     | basic_expression
+  54                     | basic_expression operator complex_expression
+
+  55  basic_expression : function_result
+  56                   | terminal_const_values
+  57                   | IDENTIFIER
+  58                   | IDENTIFIER '[' INT_CONSTANT_VALUE ']'
+  59                   | '|' IDENTIFIER '|'
+
+  60  function_result : IDENTIFIER '(' ')'
+  61                  | IDENTIFIER '(' parameters_list ')'
+
+  62  parameters_list : complex_expression
+  63                  | complex_expression ',' parameters_list
+
+  64  terminal_const_values : INT_CONSTANT_VALUE
+  65                        | BOOL_CONSTANT_VALUE
+  66                        | BIN_CONSTANT_VALUE
+  67                        | OCT_CONSTANT_VALUE
+  68                        | HEX_CONSTANT_VALUE
+  69                        | literals
+
+  70  literals : CHAR_LITERAL
+  71           | STRING_VALUE
+
+  72  declarator : IDENTIFIER
+  73             | declarator '(' ')'
+  74             | declarator '(' params_types_list ')'
+  75             | declarator '[' ']'
+  76             | declarator '[' array_size ']'
+
+  77  params_types_list : type
+  78                    | params_types_list ',' type
+  79                    | type IDENTIFIER
+  80                    | params_types_list ',' type IDENTIFIER
+
+  81  array_size : array_size ',' INT_CONSTANT_VALUE
+  82             | complex_expression
+
+  83  type : BOOLEAN_TYPE
+  84       | CHAR_TYPE
+  85       | VOID
+  86       | INT
+  87       | INTP
+  88       | CHARP
+  89       | STRING
+
+  90  operator : MINUS_OP
+  91           | PLUS_OP
+  92           | DIVISION_OP
+  93           | MULT_OP
+
+  94  boolean_operator : EQUAL
+  95                   | GREAT_EQUAL
+  96                   | LESS_EQUAL
+  97                   | GREAT_THEN
+  98                   | LESS_THEN
+  99                   | NOT_EQUAL
+ 100                   | OR_AND_DELIMITER
+
+ 101  OR_AND_DELIMITER : AND
+ 102                   | OR
+
+state 0
+	$accept : . main $end  (0)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	IF  shift 8
+	WHILE  shift 9
+	DO  shift 10
+	FOR  shift 11
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	user_function  shift 14
+	.  error
+
+	main  goto 15
+	program  goto 16
+	head_declaration  goto 17
+	line_statement  goto 18
+	functions  goto 19
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	builtin_functions  goto 23
+	if_block  goto 24
+	loop_functions  goto 25
+	for_block  goto 26
+	do_while_block  goto 27
+	while_block  goto 28
+	declarator  goto 29
+
+
+state 1
+	type : BOOLEAN_TYPE .  (83)
+
+	.  reduce 83
+
+
+state 2
+	type : CHAR_TYPE .  (84)
+
+	.  reduce 84
+
+
+state 3
+	type : VOID .  (85)
+
+	.  reduce 85
+
+
+state 4
+	type : INT .  (86)
+
+	.  reduce 86
+
+
+state 5
+	type : STRING .  (89)
+
+	.  reduce 89
+
+
+state 6
+	type : INTP .  (87)
+
+	.  reduce 87
+
+
+state 7
+	type : CHARP .  (88)
+
+	.  reduce 88
+
+
+state 8
+	if_block : IF . '(' boolean_expr ')' line_statement  (18)
+	if_block : IF . '(' boolean_expr ')' '{' program '}'  (19)
+	if_block : IF . '(' boolean_expr ')' line_statement else_block  (20)
+	if_block : IF . '(' boolean_expr ')' '{' program '}' else_block  (21)
+
+	'('  shift 30
+	.  error
+
+
+state 9
+	while_block : WHILE . '(' boolean_expr ')' line_statement  (24)
+	while_block : WHILE . '(' boolean_expr ')' '{' program '}'  (25)
+
+	'('  shift 31
+	.  error
+
+
+state 10
+	do_while_block : DO . line_statement WHILE '(' boolean_expr ')' ';'  (26)
+	do_while_block : DO . '{' program '}' WHILE '(' boolean_expr ')' ';'  (27)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	'{'  shift 32
+	.  error
+
+	line_statement  goto 33
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	declarator  goto 29
+
+
+state 11
+	for_block : FOR . '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' line_statement  (28)
+	for_block : FOR . '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' '{' program '}'  (29)
+
+	'('  shift 34
+	.  error
+
+
+state 12
+	line_statement : RETURN . complex_expression  (10)
+
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 43
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 45
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 13
+	declarator : IDENTIFIER .  (72)
+
+	.  reduce 72
+
+
+state 14
+	functions : user_function .  (12)
+
+	.  reduce 12
+
+
+state 15
+	$accept : main . $end  (0)
+
+	$end  accept
+
+
+state 16
+	main : program .  (1)
+
+	.  reduce 1
+
+
+state 17
+	program : head_declaration .  (2)
+	program : head_declaration . program  (3)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	IF  shift 8
+	WHILE  shift 9
+	DO  shift 10
+	FOR  shift 11
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	user_function  shift 14
+	$end  reduce 2
+	'}'  reduce 2
+
+	program  goto 50
+	head_declaration  goto 17
+	line_statement  goto 18
+	functions  goto 19
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	builtin_functions  goto 23
+	if_block  goto 24
+	loop_functions  goto 25
+	for_block  goto 26
+	do_while_block  goto 27
+	while_block  goto 28
+	declarator  goto 29
+
+
+state 18
+	head_declaration : line_statement .  (4)
+	line_statement : line_statement . ';'  (7)
+
+	';'  shift 51
+	$end  reduce 4
+	BOOLEAN_TYPE  reduce 4
+	CHAR_TYPE  reduce 4
+	VOID  reduce 4
+	INT  reduce 4
+	STRING  reduce 4
+	INTP  reduce 4
+	CHARP  reduce 4
+	IF  reduce 4
+	WHILE  reduce 4
+	DO  reduce 4
+	FOR  reduce 4
+	RETURN  reduce 4
+	IDENTIFIER  reduce 4
+	user_function  reduce 4
+	'}'  reduce 4
+
+
+state 19
+	head_declaration : functions .  (5)
+
+	.  reduce 5
+
+
+state 20
+	line_statement : declaration .  (8)
+
+	.  reduce 8
+
+
+state 21
+	declaration : type . list_of_declarators  (6)
+
+	IDENTIFIER  shift 13
+	.  error
+
+	list_of_declarators  goto 52
+	declarator_initialization  goto 53
+	declarator  goto 29
+
+
+state 22
+	line_statement : declarator_initialization .  (9)
+
+	.  reduce 9
+
+
+state 23
+	functions : builtin_functions .  (11)
+
+	.  reduce 11
+
+
+state 24
+	builtin_functions : if_block .  (13)
+
+	.  reduce 13
+
+
+state 25
+	builtin_functions : loop_functions .  (14)
+
+	.  reduce 14
+
+
+state 26
+	loop_functions : for_block .  (15)
+
+	.  reduce 15
+
+
+state 27
+	loop_functions : do_while_block .  (16)
+
+	.  reduce 16
+
+
+state 28
+	loop_functions : while_block .  (17)
+
+	.  reduce 17
+
+
+state 29
+	declarator_initialization : declarator . ASSIGNMENT initializator  (46)
+	declarator_initialization : declarator .  (47)
+	declarator : declarator . '(' ')'  (73)
+	declarator : declarator . '(' params_types_list ')'  (74)
+	declarator : declarator . '[' ']'  (75)
+	declarator : declarator . '[' array_size ']'  (76)
+
+	ASSIGNMENT  shift 54
+	'('  shift 55
+	'['  shift 56
+	$end  reduce 47
+	BOOLEAN_TYPE  reduce 47
+	CHAR_TYPE  reduce 47
+	VOID  reduce 47
+	INT  reduce 47
+	STRING  reduce 47
+	INTP  reduce 47
+	CHARP  reduce 47
+	IF  reduce 47
+	ELSE  reduce 47
+	WHILE  reduce 47
+	DO  reduce 47
+	FOR  reduce 47
+	RETURN  reduce 47
+	IDENTIFIER  reduce 47
+	';'  reduce 47
+	user_function  reduce 47
+	'}'  reduce 47
+	','  reduce 47
+
+
+state 30
+	if_block : IF '(' . boolean_expr ')' line_statement  (18)
+	if_block : IF '(' . boolean_expr ')' '{' program '}'  (19)
+	if_block : IF '(' . boolean_expr ')' line_statement else_block  (20)
+	if_block : IF '(' . boolean_expr ')' '{' program '}' else_block  (21)
+
+	NOT  shift 57
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 58
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 59
+	boolean_expr  goto 60
+	boolean_expr_simple  goto 61
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 31
+	while_block : WHILE '(' . boolean_expr ')' line_statement  (24)
+	while_block : WHILE '(' . boolean_expr ')' '{' program '}'  (25)
+
+	NOT  shift 57
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 58
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 59
+	boolean_expr  goto 62
+	boolean_expr_simple  goto 61
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 32
+	do_while_block : DO '{' . program '}' WHILE '(' boolean_expr ')' ';'  (27)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	IF  shift 8
+	WHILE  shift 9
+	DO  shift 10
+	FOR  shift 11
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	user_function  shift 14
+	.  error
+
+	program  goto 63
+	head_declaration  goto 17
+	line_statement  goto 18
+	functions  goto 19
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	builtin_functions  goto 23
+	if_block  goto 24
+	loop_functions  goto 25
+	for_block  goto 26
+	do_while_block  goto 27
+	while_block  goto 28
+	declarator  goto 29
+
+
+state 33
+	line_statement : line_statement . ';'  (7)
+	do_while_block : DO line_statement . WHILE '(' boolean_expr ')' ';'  (26)
+
+	WHILE  shift 64
+	';'  shift 51
+	.  error
+
+
+state 34
+	for_block : FOR '(' . for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' line_statement  (28)
+	for_block : FOR '(' . for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' '{' program '}'  (29)
+
+	IDENTIFIER  shift 65
+	.  error
+
+	for_block_inits  goto 66
+	for_block_single_init  goto 67
+
+
+state 35
+	basic_expression : IDENTIFIER .  (57)
+	basic_expression : IDENTIFIER . '[' INT_CONSTANT_VALUE ']'  (58)
+	function_result : IDENTIFIER . '(' ')'  (60)
+	function_result : IDENTIFIER . '(' parameters_list ')'  (61)
+
+	'('  shift 68
+	'['  shift 69
+	$end  reduce 57
+	MINUS_OP  reduce 57
+	PLUS_OP  reduce 57
+	DIVISION_OP  reduce 57
+	MULT_OP  reduce 57
+	BOOLEAN_TYPE  reduce 57
+	CHAR_TYPE  reduce 57
+	VOID  reduce 57
+	INT  reduce 57
+	STRING  reduce 57
+	INTP  reduce 57
+	CHARP  reduce 57
+	IF  reduce 57
+	ELSE  reduce 57
+	WHILE  reduce 57
+	DO  reduce 57
+	FOR  reduce 57
+	RETURN  reduce 57
+	AND  reduce 57
+	EQUAL  reduce 57
+	GREAT_THEN  reduce 57
+	GREAT_EQUAL  reduce 57
+	LESS_THEN  reduce 57
+	LESS_EQUAL  reduce 57
+	NOT_EQUAL  reduce 57
+	OR  reduce 57
+	IDENTIFIER  reduce 57
+	';'  reduce 57
+	user_function  reduce 57
+	')'  reduce 57
+	'}'  reduce 57
+	','  reduce 57
+	']'  reduce 57
+
+
+state 36
+	literals : STRING_VALUE .  (71)
+
+	.  reduce 71
+
+
+state 37
+	literals : CHAR_LITERAL .  (70)
+
+	.  reduce 70
+
+
+state 38
+	terminal_const_values : INT_CONSTANT_VALUE .  (64)
+
+	.  reduce 64
+
+
+state 39
+	terminal_const_values : BOOL_CONSTANT_VALUE .  (65)
+
+	.  reduce 65
+
+
+state 40
+	terminal_const_values : BIN_CONSTANT_VALUE .  (66)
+
+	.  reduce 66
+
+
+state 41
+	terminal_const_values : OCT_CONSTANT_VALUE .  (67)
+
+	.  reduce 67
+
+
+state 42
+	terminal_const_values : HEX_CONSTANT_VALUE .  (68)
+
+	.  reduce 68
+
+
+state 43
+	complex_expression : '(' . complex_expression ')'  (52)
+
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 43
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 70
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 44
+	basic_expression : '|' . IDENTIFIER '|'  (59)
+
+	IDENTIFIER  shift 71
+	.  error
+
+
+state 45
+	line_statement : RETURN complex_expression .  (10)
+
+	.  reduce 10
+
+
+state 46
+	complex_expression : basic_expression .  (53)
+	complex_expression : basic_expression . operator complex_expression  (54)
+
+	MINUS_OP  shift 72
+	PLUS_OP  shift 73
+	DIVISION_OP  shift 74
+	MULT_OP  shift 75
+	$end  reduce 53
+	BOOLEAN_TYPE  reduce 53
+	CHAR_TYPE  reduce 53
+	VOID  reduce 53
+	INT  reduce 53
+	STRING  reduce 53
+	INTP  reduce 53
+	CHARP  reduce 53
+	IF  reduce 53
+	ELSE  reduce 53
+	WHILE  reduce 53
+	DO  reduce 53
+	FOR  reduce 53
+	RETURN  reduce 53
+	AND  reduce 53
+	EQUAL  reduce 53
+	GREAT_THEN  reduce 53
+	GREAT_EQUAL  reduce 53
+	LESS_THEN  reduce 53
+	LESS_EQUAL  reduce 53
+	NOT_EQUAL  reduce 53
+	OR  reduce 53
+	IDENTIFIER  reduce 53
+	';'  reduce 53
+	user_function  reduce 53
+	')'  reduce 53
+	'}'  reduce 53
+	','  reduce 53
+	']'  reduce 53
+
+	operator  goto 76
+
+
+state 47
+	basic_expression : function_result .  (55)
+
+	.  reduce 55
+
+
+state 48
+	basic_expression : terminal_const_values .  (56)
+
+	.  reduce 56
+
+
+state 49
+	terminal_const_values : literals .  (69)
+
+	.  reduce 69
+
+
+state 50
+	program : head_declaration program .  (3)
+
+	.  reduce 3
+
+
+state 51
+	line_statement : line_statement ';' .  (7)
+
+	.  reduce 7
+
+
+state 52
+	declaration : type list_of_declarators .  (6)
+	list_of_declarators : list_of_declarators . ',' declarator_initialization  (45)
+
+	','  shift 77
+	$end  reduce 6
+	BOOLEAN_TYPE  reduce 6
+	CHAR_TYPE  reduce 6
+	VOID  reduce 6
+	INT  reduce 6
+	STRING  reduce 6
+	INTP  reduce 6
+	CHARP  reduce 6
+	IF  reduce 6
+	ELSE  reduce 6
+	WHILE  reduce 6
+	DO  reduce 6
+	FOR  reduce 6
+	RETURN  reduce 6
+	IDENTIFIER  reduce 6
+	';'  reduce 6
+	user_function  reduce 6
+	'}'  reduce 6
+
+
+state 53
+	list_of_declarators : declarator_initialization .  (44)
+
+	.  reduce 44
+
+
+state 54
+	declarator_initialization : declarator ASSIGNMENT . initializator  (46)
+
+	_NULL  shift 78
+	BITWISE_AND  shift 79
+	BITWISE_XOR  shift 80
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 43
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 81
+	initializator  goto 82
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 55
+	declarator : declarator '(' . ')'  (73)
+	declarator : declarator '(' . params_types_list ')'  (74)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	')'  shift 83
+	.  error
+
+	type  goto 84
+	params_types_list  goto 85
+
+
+state 56
+	declarator : declarator '[' . ']'  (75)
+	declarator : declarator '[' . array_size ']'  (76)
+
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 43
+	']'  shift 86
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 87
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+	array_size  goto 88
+
+
+state 57
+	boolean_expr_simple : NOT . '(' complex_expression boolean_operator boolean_expr ')'  (43)
+
+	'('  shift 89
+	.  error
+
+
+state 58
+	boolean_expr_simple : '(' . complex_expression boolean_operator boolean_expr ')'  (42)
+	complex_expression : '(' . complex_expression ')'  (52)
+
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 43
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 90
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+59: shift/reduce conflict (shift 91, reduce 40) on AND
+59: shift/reduce conflict (shift 98, reduce 40) on OR
+state 59
+	boolean_expr_simple : complex_expression .  (40)
+	boolean_expr_simple : complex_expression . boolean_operator boolean_expr  (41)
+
+	AND  shift 91
+	EQUAL  shift 92
+	GREAT_THEN  shift 93
+	GREAT_EQUAL  shift 94
+	LESS_THEN  shift 95
+	LESS_EQUAL  shift 96
+	NOT_EQUAL  shift 97
+	OR  shift 98
+	';'  reduce 40
+	')'  reduce 40
+	','  reduce 40
+
+	boolean_operator  goto 99
+	OR_AND_DELIMITER  goto 100
+
+
+state 60
+	if_block : IF '(' boolean_expr . ')' line_statement  (18)
+	if_block : IF '(' boolean_expr . ')' '{' program '}'  (19)
+	if_block : IF '(' boolean_expr . ')' line_statement else_block  (20)
+	if_block : IF '(' boolean_expr . ')' '{' program '}' else_block  (21)
+
+	')'  shift 101
+	.  error
+
+
+61: shift/reduce conflict (shift 102, reduce 37) on AND
+61: shift/reduce conflict (shift 103, reduce 37) on OR
+state 61
+	boolean_expr : boolean_expr_simple .  (37)
+	boolean_expr : boolean_expr_simple . AND boolean_expr  (38)
+	boolean_expr : boolean_expr_simple . OR boolean_expr  (39)
+
+	AND  shift 102
+	OR  shift 103
+	';'  reduce 37
+	')'  reduce 37
+	','  reduce 37
+
+
+state 62
+	while_block : WHILE '(' boolean_expr . ')' line_statement  (24)
+	while_block : WHILE '(' boolean_expr . ')' '{' program '}'  (25)
+
+	')'  shift 104
+	.  error
+
+
+state 63
+	do_while_block : DO '{' program . '}' WHILE '(' boolean_expr ')' ';'  (27)
+
+	'}'  shift 105
+	.  error
+
+
+state 64
+	do_while_block : DO line_statement WHILE . '(' boolean_expr ')' ';'  (26)
+
+	'('  shift 106
+	.  error
+
+
+state 65
+	for_block_single_init : IDENTIFIER . ASSIGNMENT initializator  (32)
+
+	ASSIGNMENT  shift 107
+	.  error
+
+
+state 66
+	for_block : FOR '(' for_block_inits . ';' for_block_boolean_expr ';' for_block_inits_update ')' line_statement  (28)
+	for_block : FOR '(' for_block_inits . ';' for_block_boolean_expr ';' for_block_inits_update ')' '{' program '}'  (29)
+
+	';'  shift 108
+	.  error
+
+
+state 67
+	for_block_inits : for_block_single_init .  (30)
+	for_block_inits : for_block_single_init . ',' for_block_inits  (31)
+
+	','  shift 109
+	';'  reduce 30
+
+
+state 68
+	function_result : IDENTIFIER '(' . ')'  (60)
+	function_result : IDENTIFIER '(' . parameters_list ')'  (61)
+
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 43
+	')'  shift 110
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 111
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	parameters_list  goto 112
+	literals  goto 49
+
+
+state 69
+	basic_expression : IDENTIFIER '[' . INT_CONSTANT_VALUE ']'  (58)
+
+	INT_CONSTANT_VALUE  shift 113
+	.  error
+
+
+state 70
+	complex_expression : '(' complex_expression . ')'  (52)
+
+	')'  shift 114
+	.  error
+
+
+state 71
+	basic_expression : '|' IDENTIFIER . '|'  (59)
+
+	'|'  shift 115
+	.  error
+
+
+state 72
+	operator : MINUS_OP .  (90)
+
+	.  reduce 90
+
+
+state 73
+	operator : PLUS_OP .  (91)
+
+	.  reduce 91
+
+
+state 74
+	operator : DIVISION_OP .  (92)
+
+	.  reduce 92
+
+
+state 75
+	operator : MULT_OP .  (93)
+
+	.  reduce 93
+
+
+state 76
+	complex_expression : basic_expression operator . complex_expression  (54)
+
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 43
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 116
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 77
+	list_of_declarators : list_of_declarators ',' . declarator_initialization  (45)
+
+	IDENTIFIER  shift 13
+	.  error
+
+	declarator_initialization  goto 117
+	declarator  goto 29
+
+
+state 78
+	initializator : _NULL .  (50)
+
+	.  reduce 50
+
+
+state 79
+	initializator : BITWISE_AND . IDENTIFIER  (48)
+
+	IDENTIFIER  shift 118
+	.  error
+
+
+state 80
+	initializator : BITWISE_XOR . IDENTIFIER  (49)
+
+	IDENTIFIER  shift 119
+	.  error
+
+
+state 81
+	initializator : complex_expression .  (51)
+
+	.  reduce 51
+
+
+state 82
+	declarator_initialization : declarator ASSIGNMENT initializator .  (46)
+
+	.  reduce 46
+
+
+state 83
+	declarator : declarator '(' ')' .  (73)
+
+	.  reduce 73
+
+
+state 84
+	params_types_list : type .  (77)
+	params_types_list : type . IDENTIFIER  (79)
+
+	IDENTIFIER  shift 120
+	')'  reduce 77
+	','  reduce 77
+
+
+state 85
+	declarator : declarator '(' params_types_list . ')'  (74)
+	params_types_list : params_types_list . ',' type  (78)
+	params_types_list : params_types_list . ',' type IDENTIFIER  (80)
+
+	')'  shift 121
+	','  shift 122
+	.  error
+
+
+state 86
+	declarator : declarator '[' ']' .  (75)
+
+	.  reduce 75
+
+
+state 87
+	array_size : complex_expression .  (82)
+
+	.  reduce 82
+
+
+state 88
+	declarator : declarator '[' array_size . ']'  (76)
+	array_size : array_size . ',' INT_CONSTANT_VALUE  (81)
+
+	','  shift 123
+	']'  shift 124
+	.  error
+
+
+state 89
+	boolean_expr_simple : NOT '(' . complex_expression boolean_operator boolean_expr ')'  (43)
+
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 43
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 125
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 90
+	boolean_expr_simple : '(' complex_expression . boolean_operator boolean_expr ')'  (42)
+	complex_expression : '(' complex_expression . ')'  (52)
+
+	AND  shift 91
+	EQUAL  shift 92
+	GREAT_THEN  shift 93
+	GREAT_EQUAL  shift 94
+	LESS_THEN  shift 95
+	LESS_EQUAL  shift 96
+	NOT_EQUAL  shift 97
+	OR  shift 98
+	')'  shift 114
+	.  error
+
+	boolean_operator  goto 126
+	OR_AND_DELIMITER  goto 100
+
+
+state 91
+	OR_AND_DELIMITER : AND .  (101)
+
+	.  reduce 101
+
+
+state 92
+	boolean_operator : EQUAL .  (94)
+
+	.  reduce 94
+
+
+state 93
+	boolean_operator : GREAT_THEN .  (97)
+
+	.  reduce 97
+
+
+state 94
+	boolean_operator : GREAT_EQUAL .  (95)
+
+	.  reduce 95
+
+
+state 95
+	boolean_operator : LESS_THEN .  (98)
+
+	.  reduce 98
+
+
+state 96
+	boolean_operator : LESS_EQUAL .  (96)
+
+	.  reduce 96
+
+
+state 97
+	boolean_operator : NOT_EQUAL .  (99)
+
+	.  reduce 99
+
+
+state 98
+	OR_AND_DELIMITER : OR .  (102)
+
+	.  reduce 102
+
+
+state 99
+	boolean_expr_simple : complex_expression boolean_operator . boolean_expr  (41)
+
+	NOT  shift 57
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 58
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 59
+	boolean_expr  goto 127
+	boolean_expr_simple  goto 61
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 100
+	boolean_operator : OR_AND_DELIMITER .  (100)
+
+	.  reduce 100
+
+
+state 101
+	if_block : IF '(' boolean_expr ')' . line_statement  (18)
+	if_block : IF '(' boolean_expr ')' . '{' program '}'  (19)
+	if_block : IF '(' boolean_expr ')' . line_statement else_block  (20)
+	if_block : IF '(' boolean_expr ')' . '{' program '}' else_block  (21)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	'{'  shift 128
+	.  error
+
+	line_statement  goto 129
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	declarator  goto 29
+
+
+state 102
+	boolean_expr : boolean_expr_simple AND . boolean_expr  (38)
+
+	NOT  shift 57
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 58
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 59
+	boolean_expr  goto 130
+	boolean_expr_simple  goto 61
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 103
+	boolean_expr : boolean_expr_simple OR . boolean_expr  (39)
+
+	NOT  shift 57
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 58
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 59
+	boolean_expr  goto 131
+	boolean_expr_simple  goto 61
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 104
+	while_block : WHILE '(' boolean_expr ')' . line_statement  (24)
+	while_block : WHILE '(' boolean_expr ')' . '{' program '}'  (25)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	'{'  shift 132
+	.  error
+
+	line_statement  goto 133
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	declarator  goto 29
+
+
+state 105
+	do_while_block : DO '{' program '}' . WHILE '(' boolean_expr ')' ';'  (27)
+
+	WHILE  shift 134
+	.  error
+
+
+state 106
+	do_while_block : DO line_statement WHILE '(' . boolean_expr ')' ';'  (26)
+
+	NOT  shift 57
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 58
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 59
+	boolean_expr  goto 135
+	boolean_expr_simple  goto 61
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 107
+	for_block_single_init : IDENTIFIER ASSIGNMENT . initializator  (32)
+
+	_NULL  shift 78
+	BITWISE_AND  shift 79
+	BITWISE_XOR  shift 80
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 43
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 81
+	initializator  goto 136
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 108
+	for_block : FOR '(' for_block_inits ';' . for_block_boolean_expr ';' for_block_inits_update ')' line_statement  (28)
+	for_block : FOR '(' for_block_inits ';' . for_block_boolean_expr ';' for_block_inits_update ')' '{' program '}'  (29)
+
+	NOT  shift 57
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 58
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 59
+	boolean_expr  goto 137
+	for_block_boolean_expr  goto 138
+	boolean_expr_simple  goto 61
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 109
+	for_block_inits : for_block_single_init ',' . for_block_inits  (31)
+
+	IDENTIFIER  shift 65
+	.  error
+
+	for_block_inits  goto 139
+	for_block_single_init  goto 67
+
+
+state 110
+	function_result : IDENTIFIER '(' ')' .  (60)
+
+	.  reduce 60
+
+
+state 111
+	parameters_list : complex_expression .  (62)
+	parameters_list : complex_expression . ',' parameters_list  (63)
+
+	','  shift 140
+	')'  reduce 62
+
+
+state 112
+	function_result : IDENTIFIER '(' parameters_list . ')'  (61)
+
+	')'  shift 141
+	.  error
+
+
+state 113
+	basic_expression : IDENTIFIER '[' INT_CONSTANT_VALUE . ']'  (58)
+
+	']'  shift 142
+	.  error
+
+
+state 114
+	complex_expression : '(' complex_expression ')' .  (52)
+
+	.  reduce 52
+
+
+state 115
+	basic_expression : '|' IDENTIFIER '|' .  (59)
+
+	.  reduce 59
+
+
+state 116
+	complex_expression : basic_expression operator complex_expression .  (54)
+
+	.  reduce 54
+
+
+state 117
+	list_of_declarators : list_of_declarators ',' declarator_initialization .  (45)
+
+	.  reduce 45
+
+
+state 118
+	initializator : BITWISE_AND IDENTIFIER .  (48)
+
+	.  reduce 48
+
+
+state 119
+	initializator : BITWISE_XOR IDENTIFIER .  (49)
+
+	.  reduce 49
+
+
+state 120
+	params_types_list : type IDENTIFIER .  (79)
+
+	.  reduce 79
+
+
+state 121
+	declarator : declarator '(' params_types_list ')' .  (74)
+
+	.  reduce 74
+
+
+state 122
+	params_types_list : params_types_list ',' . type  (78)
+	params_types_list : params_types_list ',' . type IDENTIFIER  (80)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	.  error
+
+	type  goto 143
+
+
+state 123
+	array_size : array_size ',' . INT_CONSTANT_VALUE  (81)
+
+	INT_CONSTANT_VALUE  shift 144
+	.  error
+
+
+state 124
+	declarator : declarator '[' array_size ']' .  (76)
+
+	.  reduce 76
+
+
+state 125
+	boolean_expr_simple : NOT '(' complex_expression . boolean_operator boolean_expr ')'  (43)
+
+	AND  shift 91
+	EQUAL  shift 92
+	GREAT_THEN  shift 93
+	GREAT_EQUAL  shift 94
+	LESS_THEN  shift 95
+	LESS_EQUAL  shift 96
+	NOT_EQUAL  shift 97
+	OR  shift 98
+	.  error
+
+	boolean_operator  goto 145
+	OR_AND_DELIMITER  goto 100
+
+
+state 126
+	boolean_expr_simple : '(' complex_expression boolean_operator . boolean_expr ')'  (42)
+
+	NOT  shift 57
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 58
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 59
+	boolean_expr  goto 146
+	boolean_expr_simple  goto 61
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 127
+	boolean_expr_simple : complex_expression boolean_operator boolean_expr .  (41)
+
+	.  reduce 41
+
+
+state 128
+	if_block : IF '(' boolean_expr ')' '{' . program '}'  (19)
+	if_block : IF '(' boolean_expr ')' '{' . program '}' else_block  (21)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	IF  shift 8
+	WHILE  shift 9
+	DO  shift 10
+	FOR  shift 11
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	user_function  shift 14
+	.  error
+
+	program  goto 147
+	head_declaration  goto 17
+	line_statement  goto 18
+	functions  goto 19
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	builtin_functions  goto 23
+	if_block  goto 24
+	loop_functions  goto 25
+	for_block  goto 26
+	do_while_block  goto 27
+	while_block  goto 28
+	declarator  goto 29
+
+
+state 129
+	line_statement : line_statement . ';'  (7)
+	if_block : IF '(' boolean_expr ')' line_statement .  (18)
+	if_block : IF '(' boolean_expr ')' line_statement . else_block  (20)
+
+	ELSE  shift 148
+	';'  shift 51
+	$end  reduce 18
+	BOOLEAN_TYPE  reduce 18
+	CHAR_TYPE  reduce 18
+	VOID  reduce 18
+	INT  reduce 18
+	STRING  reduce 18
+	INTP  reduce 18
+	CHARP  reduce 18
+	IF  reduce 18
+	WHILE  reduce 18
+	DO  reduce 18
+	FOR  reduce 18
+	RETURN  reduce 18
+	IDENTIFIER  reduce 18
+	user_function  reduce 18
+	'}'  reduce 18
+
+	else_block  goto 149
+
+
+state 130
+	boolean_expr : boolean_expr_simple AND boolean_expr .  (38)
+
+	.  reduce 38
+
+
+state 131
+	boolean_expr : boolean_expr_simple OR boolean_expr .  (39)
+
+	.  reduce 39
+
+
+state 132
+	while_block : WHILE '(' boolean_expr ')' '{' . program '}'  (25)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	IF  shift 8
+	WHILE  shift 9
+	DO  shift 10
+	FOR  shift 11
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	user_function  shift 14
+	.  error
+
+	program  goto 150
+	head_declaration  goto 17
+	line_statement  goto 18
+	functions  goto 19
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	builtin_functions  goto 23
+	if_block  goto 24
+	loop_functions  goto 25
+	for_block  goto 26
+	do_while_block  goto 27
+	while_block  goto 28
+	declarator  goto 29
+
+
+state 133
+	line_statement : line_statement . ';'  (7)
+	while_block : WHILE '(' boolean_expr ')' line_statement .  (24)
+
+	';'  shift 51
+	$end  reduce 24
+	BOOLEAN_TYPE  reduce 24
+	CHAR_TYPE  reduce 24
+	VOID  reduce 24
+	INT  reduce 24
+	STRING  reduce 24
+	INTP  reduce 24
+	CHARP  reduce 24
+	IF  reduce 24
+	WHILE  reduce 24
+	DO  reduce 24
+	FOR  reduce 24
+	RETURN  reduce 24
+	IDENTIFIER  reduce 24
+	user_function  reduce 24
+	'}'  reduce 24
+
+
+state 134
+	do_while_block : DO '{' program '}' WHILE . '(' boolean_expr ')' ';'  (27)
+
+	'('  shift 151
+	.  error
+
+
+state 135
+	do_while_block : DO line_statement WHILE '(' boolean_expr . ')' ';'  (26)
+
+	')'  shift 152
+	.  error
+
+
+state 136
+	for_block_single_init : IDENTIFIER ASSIGNMENT initializator .  (32)
+
+	.  reduce 32
+
+
+state 137
+	for_block_boolean_expr : boolean_expr .  (35)
+	for_block_boolean_expr : boolean_expr . ',' for_block_boolean_expr  (36)
+
+	','  shift 153
+	';'  reduce 35
+
+
+state 138
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr . ';' for_block_inits_update ')' line_statement  (28)
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr . ';' for_block_inits_update ')' '{' program '}'  (29)
+
+	';'  shift 154
+	.  error
+
+
+state 139
+	for_block_inits : for_block_single_init ',' for_block_inits .  (31)
+
+	.  reduce 31
+
+
+state 140
+	parameters_list : complex_expression ',' . parameters_list  (63)
+
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 43
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 111
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	parameters_list  goto 155
+	literals  goto 49
+
+
+state 141
+	function_result : IDENTIFIER '(' parameters_list ')' .  (61)
+
+	.  reduce 61
+
+
+state 142
+	basic_expression : IDENTIFIER '[' INT_CONSTANT_VALUE ']' .  (58)
+
+	.  reduce 58
+
+
+state 143
+	params_types_list : params_types_list ',' type .  (78)
+	params_types_list : params_types_list ',' type . IDENTIFIER  (80)
+
+	IDENTIFIER  shift 156
+	')'  reduce 78
+	','  reduce 78
+
+
+state 144
+	array_size : array_size ',' INT_CONSTANT_VALUE .  (81)
+
+	.  reduce 81
+
+
+state 145
+	boolean_expr_simple : NOT '(' complex_expression boolean_operator . boolean_expr ')'  (43)
+
+	NOT  shift 57
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 58
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 59
+	boolean_expr  goto 157
+	boolean_expr_simple  goto 61
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 146
+	boolean_expr_simple : '(' complex_expression boolean_operator boolean_expr . ')'  (42)
+
+	')'  shift 158
+	.  error
+
+
+state 147
+	if_block : IF '(' boolean_expr ')' '{' program . '}'  (19)
+	if_block : IF '(' boolean_expr ')' '{' program . '}' else_block  (21)
+
+	'}'  shift 159
+	.  error
+
+
+state 148
+	else_block : ELSE . line_statement  (22)
+	else_block : ELSE . '{' program '}'  (23)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	'{'  shift 160
+	.  error
+
+	line_statement  goto 161
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	declarator  goto 29
+
+
+state 149
+	if_block : IF '(' boolean_expr ')' line_statement else_block .  (20)
+
+	.  reduce 20
+
+
+state 150
+	while_block : WHILE '(' boolean_expr ')' '{' program . '}'  (25)
+
+	'}'  shift 162
+	.  error
+
+
+state 151
+	do_while_block : DO '{' program '}' WHILE '(' . boolean_expr ')' ';'  (27)
+
+	NOT  shift 57
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 58
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 59
+	boolean_expr  goto 163
+	boolean_expr_simple  goto 61
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 152
+	do_while_block : DO line_statement WHILE '(' boolean_expr ')' . ';'  (26)
+
+	';'  shift 164
+	.  error
+
+
+state 153
+	for_block_boolean_expr : boolean_expr ',' . for_block_boolean_expr  (36)
+
+	NOT  shift 57
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 58
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 59
+	boolean_expr  goto 137
+	for_block_boolean_expr  goto 165
+	boolean_expr_simple  goto 61
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 154
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr ';' . for_block_inits_update ')' line_statement  (28)
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr ';' . for_block_inits_update ')' '{' program '}'  (29)
+
+	IDENTIFIER  shift 166
+	.  error
+
+	for_block_inits_update  goto 167
+
+
+state 155
+	parameters_list : complex_expression ',' parameters_list .  (63)
+
+	.  reduce 63
+
+
+state 156
+	params_types_list : params_types_list ',' type IDENTIFIER .  (80)
+
+	.  reduce 80
+
+
+state 157
+	boolean_expr_simple : NOT '(' complex_expression boolean_operator boolean_expr . ')'  (43)
+
+	')'  shift 168
+	.  error
+
+
+state 158
+	boolean_expr_simple : '(' complex_expression boolean_operator boolean_expr ')' .  (42)
+
+	.  reduce 42
+
+
+state 159
+	if_block : IF '(' boolean_expr ')' '{' program '}' .  (19)
+	if_block : IF '(' boolean_expr ')' '{' program '}' . else_block  (21)
+
+	ELSE  shift 148
+	$end  reduce 19
+	BOOLEAN_TYPE  reduce 19
+	CHAR_TYPE  reduce 19
+	VOID  reduce 19
+	INT  reduce 19
+	STRING  reduce 19
+	INTP  reduce 19
+	CHARP  reduce 19
+	IF  reduce 19
+	WHILE  reduce 19
+	DO  reduce 19
+	FOR  reduce 19
+	RETURN  reduce 19
+	IDENTIFIER  reduce 19
+	user_function  reduce 19
+	'}'  reduce 19
+
+	else_block  goto 169
+
+
+state 160
+	else_block : ELSE '{' . program '}'  (23)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	IF  shift 8
+	WHILE  shift 9
+	DO  shift 10
+	FOR  shift 11
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	user_function  shift 14
+	.  error
+
+	program  goto 170
+	head_declaration  goto 17
+	line_statement  goto 18
+	functions  goto 19
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	builtin_functions  goto 23
+	if_block  goto 24
+	loop_functions  goto 25
+	for_block  goto 26
+	do_while_block  goto 27
+	while_block  goto 28
+	declarator  goto 29
+
+
+state 161
+	line_statement : line_statement . ';'  (7)
+	else_block : ELSE line_statement .  (22)
+
+	';'  shift 51
+	$end  reduce 22
+	BOOLEAN_TYPE  reduce 22
+	CHAR_TYPE  reduce 22
+	VOID  reduce 22
+	INT  reduce 22
+	STRING  reduce 22
+	INTP  reduce 22
+	CHARP  reduce 22
+	IF  reduce 22
+	WHILE  reduce 22
+	DO  reduce 22
+	FOR  reduce 22
+	RETURN  reduce 22
+	IDENTIFIER  reduce 22
+	user_function  reduce 22
+	'}'  reduce 22
+
+
+state 162
+	while_block : WHILE '(' boolean_expr ')' '{' program '}' .  (25)
+
+	.  reduce 25
+
+
+state 163
+	do_while_block : DO '{' program '}' WHILE '(' boolean_expr . ')' ';'  (27)
+
+	')'  shift 171
+	.  error
+
+
+state 164
+	do_while_block : DO line_statement WHILE '(' boolean_expr ')' ';' .  (26)
+
+	.  reduce 26
+
+
+state 165
+	for_block_boolean_expr : boolean_expr ',' for_block_boolean_expr .  (36)
+
+	.  reduce 36
+
+
+state 166
+	for_block_inits_update : IDENTIFIER . ASSIGNMENT initializator  (33)
+	for_block_inits_update : IDENTIFIER . ASSIGNMENT initializator ',' for_block_inits_update  (34)
+
+	ASSIGNMENT  shift 172
+	.  error
+
+
+state 167
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update . ')' line_statement  (28)
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update . ')' '{' program '}'  (29)
+
+	')'  shift 173
+	.  error
+
+
+state 168
+	boolean_expr_simple : NOT '(' complex_expression boolean_operator boolean_expr ')' .  (43)
+
+	.  reduce 43
+
+
+state 169
+	if_block : IF '(' boolean_expr ')' '{' program '}' else_block .  (21)
+
+	.  reduce 21
+
+
+state 170
+	else_block : ELSE '{' program . '}'  (23)
+
+	'}'  shift 174
+	.  error
+
+
+state 171
+	do_while_block : DO '{' program '}' WHILE '(' boolean_expr ')' . ';'  (27)
+
+	';'  shift 175
+	.  error
+
+
+state 172
+	for_block_inits_update : IDENTIFIER ASSIGNMENT . initializator  (33)
+	for_block_inits_update : IDENTIFIER ASSIGNMENT . initializator ',' for_block_inits_update  (34)
+
+	_NULL  shift 78
+	BITWISE_AND  shift 79
+	BITWISE_XOR  shift 80
+	IDENTIFIER  shift 35
+	STRING_VALUE  shift 36
+	CHAR_LITERAL  shift 37
+	INT_CONSTANT_VALUE  shift 38
+	BOOL_CONSTANT_VALUE  shift 39
+	BIN_CONSTANT_VALUE  shift 40
+	OCT_CONSTANT_VALUE  shift 41
+	HEX_CONSTANT_VALUE  shift 42
+	'('  shift 43
+	'|'  shift 44
+	.  error
+
+	complex_expression  goto 81
+	initializator  goto 176
+	basic_expression  goto 46
+	function_result  goto 47
+	terminal_const_values  goto 48
+	literals  goto 49
+
+
+state 173
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' . line_statement  (28)
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' . '{' program '}'  (29)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	'{'  shift 177
+	.  error
+
+	line_statement  goto 178
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	declarator  goto 29
+
+
+state 174
+	else_block : ELSE '{' program '}' .  (23)
+
+	.  reduce 23
+
+
+state 175
+	do_while_block : DO '{' program '}' WHILE '(' boolean_expr ')' ';' .  (27)
+
+	.  reduce 27
+
+
+state 176
+	for_block_inits_update : IDENTIFIER ASSIGNMENT initializator .  (33)
+	for_block_inits_update : IDENTIFIER ASSIGNMENT initializator . ',' for_block_inits_update  (34)
+
+	','  shift 179
+	')'  reduce 33
+
+
+state 177
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' '{' . program '}'  (29)
+
+	BOOLEAN_TYPE  shift 1
+	CHAR_TYPE  shift 2
+	VOID  shift 3
+	INT  shift 4
+	STRING  shift 5
+	INTP  shift 6
+	CHARP  shift 7
+	IF  shift 8
+	WHILE  shift 9
+	DO  shift 10
+	FOR  shift 11
+	RETURN  shift 12
+	IDENTIFIER  shift 13
+	user_function  shift 14
+	.  error
+
+	program  goto 180
+	head_declaration  goto 17
+	line_statement  goto 18
+	functions  goto 19
+	declaration  goto 20
+	type  goto 21
+	declarator_initialization  goto 22
+	builtin_functions  goto 23
+	if_block  goto 24
+	loop_functions  goto 25
+	for_block  goto 26
+	do_while_block  goto 27
+	while_block  goto 28
+	declarator  goto 29
+
+
+state 178
+	line_statement : line_statement . ';'  (7)
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' line_statement .  (28)
+
+	';'  shift 51
+	$end  reduce 28
+	BOOLEAN_TYPE  reduce 28
+	CHAR_TYPE  reduce 28
+	VOID  reduce 28
+	INT  reduce 28
+	STRING  reduce 28
+	INTP  reduce 28
+	CHARP  reduce 28
+	IF  reduce 28
+	WHILE  reduce 28
+	DO  reduce 28
+	FOR  reduce 28
+	RETURN  reduce 28
+	IDENTIFIER  reduce 28
+	user_function  reduce 28
+	'}'  reduce 28
+
+
+state 179
+	for_block_inits_update : IDENTIFIER ASSIGNMENT initializator ',' . for_block_inits_update  (34)
+
+	IDENTIFIER  shift 166
+	.  error
+
+	for_block_inits_update  goto 181
+
+
+state 180
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' '{' program . '}'  (29)
+
+	'}'  shift 182
+	.  error
+
+
+state 181
+	for_block_inits_update : IDENTIFIER ASSIGNMENT initializator ',' for_block_inits_update .  (34)
+
+	.  reduce 34
+
+
+state 182
+	for_block : FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' '{' program '}' .  (29)
+
+	.  reduce 29
+
+
+State 59 contains 2 shift/reduce conflicts.
+State 61 contains 2 shift/reduce conflicts.
+
+
+51 terminals, 36 nonterminals
+103 grammar rules, 183 states
