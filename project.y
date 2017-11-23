@@ -29,31 +29,39 @@
 main : program {printf("FINAL DONE\n");};
 
 program
-	:head_declaration {printf("Done\n");}
-	|line_statement
-	|line_statement program
-	|head_declaration program
+	:head_declaration {printf("head_declaration\n");}
+	|head_declaration program {printf("head_declaration recursion\n");}
 	;
-
 
 
 head_declaration
-	:declaration
-	|function_declaration
+	: line_statement
+	| functions
 	;
 
 declaration
-	:type list_of_declarators ';'
+	: type list_of_declarators
 	;
 
-function_declaration
-	:builtin_function_declaration
+line_statement
+	: line_statement ';'
+	| declaration
+	| declarator_initialization  
+	| RETURN complex_expression 
+	;
+
+functions
+	:builtin_functions
 	|user_function
 	;
 
-builtin_function_declaration
+builtin_functions
 	: if_block
-	| for_block
+	| loop_functions	
+	;
+
+loop_functions
+	: for_block
 	| do_while_block
 	| while_block
 	;
@@ -81,8 +89,8 @@ do_while_block
 	;
 
 for_block
-	: FOR '(' for_block_inits ';' boolean_expr ';' for_inits_update ')' line_statement
-	| FOR '(' for_block_inits ';' boolean_expr ';' for_inits_update ')' '{' program '}'
+	: FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' line_statement
+	| FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' '{' program '}'
 	;
 
 for_block_inits
@@ -90,41 +98,26 @@ for_block_inits
 	| for_block_single_init ',' for_block_inits
 	;
 
-for_block_single_init:
-	:IDENTIFIER ASSIGNMENT initializator
+for_block_single_init
+	:IDENTIFIER ASSIGNMENT initializator 
 	;
 
-for_inits_update
-	: complex_expression
-	| complex_expression ',' for_inits_update
+for_block_inits_update
+	: IDENTIFIER ASSIGNMENT initializator
+	| IDENTIFIER ASSIGNMENT initializator ',' for_block_inits_update
 	;
 
+for_block_boolean_expr
+	: boolean_expr
+	| boolean_expr ',' for_block_boolean_expr
+	;
+
+/* MUST FINISH */
 boolean_expr
-	: complex_expression
-	| boolean_expr boolean_operator boolean_expr
-	|or_and_expression
-	|'(' boolean_expr ')'
-	| NOT boolean_expr
-	;
-or_and_expression
-	:or_expression
-	|and_expression
+	: basic_expression
+	| basic_expression boolean_operator boolean_expr 
 	;
 
-or_expression
-	:boolean_expr OR boolean_expr
-	;
-
-and_expression
-	:boolean_expr AND boolean_expr
-	;
-
-line_statement
-	: declaration
-	| declarator_initialization ';'
-	| complex_expression ';'
-	| RETURN complex_expression ';'
-	;
 
 list_of_declarators
 	:declarator_initialization
@@ -243,10 +236,12 @@ boolean_operator
 	|GREAT_THEN
 	|LESS_THEN
 	|NOT_EQUAL
+	|OR_AND_DELIMITER
 	;
-boolean_delimeters
-	: AND
-	| OR
+
+OR_AND_DELIMITER
+	:AND
+	|OR
 	;
 /*
 builtin_function   
