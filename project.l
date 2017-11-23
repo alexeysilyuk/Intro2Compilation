@@ -29,8 +29,8 @@ charp return CHARP;
 
 if return IF;
 else return ELSE;
-while return WHILE;
 do return DO;
+while return WHILE;
 for return FOR;
 
 
@@ -67,7 +67,7 @@ true|false 		{ return BOOL_CONSTANT_VALUE;}
 
 "&&" return AND;
 "/" return DIVISION_OP;
-"==" return COMPARATION;
+"==" return EQUAL;
 "=" return ASSIGNMENT;
 ">=" return GREAT_EQUAL;
 "<=" return LESS_EQUAL;
@@ -88,6 +88,7 @@ true|false 		{ return BOOL_CONSTANT_VALUE;}
 
 
 {WHITESPACE}+				{ /* ignore spaces */ };
+
 .  					{  /* ignore bad symbols and new line */ };
 
 

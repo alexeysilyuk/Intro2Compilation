@@ -1,4 +1,4 @@
-%start program
+%start main
 %{
 	#define YYPRINT(file, type, value) fprint(file, "%d", value);
 
@@ -20,15 +20,22 @@
 %token FOR
 %token RETURN
 %token _NULL
-%token AND, DIVISION_OP, ASSIGNMENT, COMPARATION, GREAT_THEN, GREAT_EQUAL, LESS_THEN
+%token AND, DIVISION_OP, ASSIGNMENT, EQUAL, GREAT_THEN, GREAT_EQUAL, LESS_THEN
 %token LESS_EQUAL, MINUS_OP, NOT, NOT_EQUAL, OR, PLUS_OP, MULT_OP,BITWISE_AND, BITWISE_XOR
 %token IDENTIFIER, STRING_VALUE, CHAR_LITERAL, POINTER_ADDRESS
 %token INT_CONSTANT_VALUE, BOOL_CONSTANT_VALUE, BIN_CONSTANT_VALUE, OCT_CONSTANT_VALUE, HEX_CONSTANT_VALUE
 %%
+
+main : program {printf("FINAL DONE\n");};
+
 program
 	:head_declaration {printf("Done\n");}
-	|program head_declaration 
+	|line_statement
+	|line_statement program
+	|head_declaration program
 	;
+
+
 
 head_declaration
 	:declaration
@@ -47,19 +54,74 @@ function_declaration
 builtin_function_declaration
 	: if_block
 	| for_block
-	| while_block
 	| do_while_block
+	| while_block
 	;
 
 if_block
-	: IF '(' /*expr*/ ')' line_statement
-	| IF '(' expr ')' '{' program '}'
-	| if_block ELSE statement
-	| if_block ELSE '{' program '}'
+	: IF '(' boolean_expr ')' line_statement  
+	| IF '(' boolean_expr ')' '{' program '}' 
+	| IF '(' boolean_expr ')' line_statement  else_block
+	| IF '(' boolean_expr ')' '{' program '}' else_block	
+	;
+
+else_block
+	: ELSE line_statement
+	| ELSE '{' program '}'
+	;
+
+while_block
+	: WHILE '(' boolean_expr ')' line_statement
+	| WHILE '(' boolean_expr ')' '{' program '}'
+	;
+
+do_while_block
+	: DO line_statement  WHILE '(' boolean_expr ')' ';'
+	| DO '{' program '}'  WHILE '(' boolean_expr ')' ';'
+	;
+
+for_block
+	: FOR '(' for_block_inits ';' boolean_expr ';' for_inits_update ')' line_statement
+	| FOR '(' for_block_inits ';' boolean_expr ';' for_inits_update ')' '{' program '}'
+	;
+
+for_block_inits
+	: for_block_single_init
+	| for_block_single_init ',' for_block_inits
+	;
+
+for_block_single_init:
+	:IDENTIFIER ASSIGNMENT initializator
+	;
+
+for_inits_update
+	: complex_expression
+	| complex_expression ',' for_inits_update
+	;
+
+boolean_expr
+	: complex_expression
+	| boolean_expr boolean_operator boolean_expr
+	|or_and_expression
+	|'(' boolean_expr ')'
+	| NOT boolean_expr
+	;
+or_and_expression
+	:or_expression
+	|and_expression
+	;
+
+or_expression
+	:boolean_expr OR boolean_expr
+	;
+
+and_expression
+	:boolean_expr AND boolean_expr
 	;
 
 line_statement
-	: declarator_initialization
+	: declaration
+	| declarator_initialization ';'
 	| complex_expression ';'
 	| RETURN complex_expression ';'
 	;
@@ -84,7 +146,8 @@ initializator
 
 
 complex_expression
-	:basic_expression
+	:'(' complex_expression ')'
+	|basic_expression
 	|basic_expression operator complex_expression
 	;
 
@@ -173,6 +236,19 @@ operator
 	|MULT_OP
 	;
 
+boolean_operator
+	:EQUAL
+	|GREAT_EQUAL
+	|LESS_EQUAL
+	|GREAT_THEN
+	|LESS_THEN
+	|NOT_EQUAL
+	;
+boolean_delimeters
+	: AND
+	| OR
+	;
+/*
 builtin_function   
 	:IF    
 	|ELSE {printf("else");}   
@@ -180,6 +256,7 @@ builtin_function
 	|DO   {printf("do");}   
 	|FOR  {printf("for");}
 	;
+*/
 /*
 others
 	:RETURN {printf("return");}   

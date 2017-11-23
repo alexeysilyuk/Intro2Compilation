@@ -1,2 +1,6 @@
-if()
-	return 1+func(2,1);
+do 
+{ x = 1; 
+int y = 2;
+foo();
+
+} while(x==1);

@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e 
+OPT=$(getopt -n "LEx&YAcc" -o "t" -- "$@")
+eval set -- "$OPT"
+trace=0
+while [ "$1" != "--" ]; do
+    case "$1" in
+    -t)
+            trace=1
+		echo "Trace enabled "
+            ;;
+ 	*)
+			echo Unknown parameter
+			exit 1
+            ;;
+    esac
+    shift
+	
+done
+
+
+lex project.l;
+
+if [ "$trace" == 1 ]; then
+	yacc  -t project.y
+else
+	yacc  project.y
+fi
+
+cc -o project y.tab.c -ll -Ly;
+./project < test.t
