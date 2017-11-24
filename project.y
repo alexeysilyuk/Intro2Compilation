@@ -24,13 +24,16 @@
 %token LESS_EQUAL, MINUS_OP, NOT, NOT_EQUAL, OR, PLUS_OP, MULT_OP,BITWISE_AND, BITWISE_XOR
 %token IDENTIFIER, STRING_VALUE, CHAR_LITERAL, POINTER_ADDRESS
 %token INT_CONSTANT_VALUE, BOOL_CONSTANT_VALUE, BIN_CONSTANT_VALUE, OCT_CONSTANT_VALUE, HEX_CONSTANT_VALUE
+
 %%
+
+
 
 main : program {printf("FINAL DONE\n");};
 
 program
-	:head_declaration {printf("head_declaration\n");}
-	|head_declaration program {printf("head_declaration recursion\n");}
+	:head_declaration {/*printf("head_declaration\n"); */}
+	|head_declaration program { /*printf("head_declaration recursion\n"); */}
 	;
 
 
@@ -114,6 +117,7 @@ for_block_boolean_expr
 
 /* MUST FINISH */
 
+/* Boolean */
 boolean_expr:
 		 boolean_expr AND boolean_expr_complex
 		|boolean_expr OR boolean_expr_complex
@@ -131,6 +135,27 @@ boolean_expr_simple:
 		complex_expression
 		|'(' boolean_expr ')'
 		;
+
+bool_binary_op:
+		EQUAL
+		|NOT_EQUAL
+		|LESS_THEN
+		|LESS_EQUAL
+		|GREAT_THEN
+		|GREAT_EQUAL
+		;
+
+bool_unary_op:
+		NOT
+		;
+
+
+user_function:
+		type declarator '{' program '}'
+		|type declarator '{' '}'
+		;
+
+/* CHANGES ENDS */
 
 
 list_of_declarators
@@ -243,19 +268,6 @@ operator
 	|MULT_OP
 	;
 
-
-bool_binary_op:
-		EQUAL
-		|NOT_EQUAL
-		|LESS_THEN
-		|LESS_EQUAL
-		|GREAT_THEN
-		|GREAT_EQUAL
-		;
-
-bool_unary_op:
-		NOT
-		;
 
 /*
 builtin_function   
