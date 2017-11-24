@@ -114,18 +114,24 @@ for_block_boolean_expr
 
 /* MUST FINISH */
 
-boolean_expr
-	: boolean_single
-	| boolean_single OR_AND_DELIMITER boolean_expr
-	| NOT boolean_expr
-	| '(' boolean_expr ')'
-	;
+boolean_expr:
+		 boolean_expr AND boolean_expr_complex
+		|boolean_expr OR boolean_expr_complex
+		|boolean_expr_complex
+		|bool_unary_op boolean_expr_complex
+		;
 
-boolean_single
-	:complex_expression
-	|complex_expression boolean_operator complex_expression
-	| '(' boolean_single ')'
-	;
+boolean_expr_complex:
+		boolean_expr_complex bool_binary_op boolean_expr_simple
+		|boolean_expr_simple
+		;
+
+
+boolean_expr_simple:
+		complex_expression
+		|'(' boolean_expr ')'
+		;
+
 
 list_of_declarators
 	:declarator_initialization
@@ -237,19 +243,20 @@ operator
 	|MULT_OP
 	;
 
-boolean_operator
-	:EQUAL
-	|GREAT_EQUAL
-	|LESS_EQUAL
-	|GREAT_THEN
-	|LESS_THEN
-	|NOT_EQUAL
-	;
 
-OR_AND_DELIMITER
-	:AND
-	|OR
-	;
+bool_binary_op:
+		EQUAL
+		|NOT_EQUAL
+		|LESS_THEN
+		|LESS_EQUAL
+		|GREAT_THEN
+		|GREAT_EQUAL
+		;
+
+bool_unary_op:
+		NOT
+		;
+
 /*
 builtin_function   
 	:IF    
