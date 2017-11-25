@@ -1,21 +1,19 @@
+charp x ;
+int x, z ;
+intp y ;
 
-charp x;
-int x,z;
-intp y;
+y =&x ;
+x = 5 ;
+z = ^y ;
 
-y =&x;
-x = 5;
-z = ^y;
 
-////
-
-int foo() {
-	return 0;
+int foo () {
+	return 0 ;
 }
 
 void main() {
-	int a;
-	a = foo();
+	int a ;
+	a = foo () ;
 }
 
 ////
@@ -23,15 +21,15 @@ void main() {
 int foo(int i, int j, int k) {
 	intp i;
 	boolean fee(int l, int i, char n) {
-		return true;
+		return true ;
 	}
-	return 0;
+	return 0 ;
 }
 
 ////
 
 int foo_2() { }
-char f234() { return '0'; }
+char f234() { return '0' ; }
 
 ////
 int foo(int i, char j, string k) {
@@ -116,4 +114,4 @@ z = "foobar";
 z = &z[5];
 z = ^(z-5);
 
-
+*/

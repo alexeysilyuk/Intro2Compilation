@@ -42,8 +42,8 @@ null return _NULL;
 
 true|false 		{ return BOOL_CONSTANT_VALUE;}
 {BIN}+"b"    		{ return BIN_CONSTANT_VALUE;}
+{DIGWZ}{DIG}*|0 	{ return INT_CONSTANT_VALUE;}
 '0'{OCT}*    		{ return OCT_CONSTANT_VALUE;}
-{DIGWZ}{DIG}*		{ return INT_CONSTANT_VALUE;}
 {HEXPREF}{HEX}+		{ return HEX_CONSTANT_VALUE;}
 
 {LETTER}({LETTER}|{DIG}|[_])*  return IDENTIFIER; 
@@ -88,8 +88,7 @@ true|false 		{ return BOOL_CONSTANT_VALUE;}
 
 
 {WHITESPACE}+				{ /* ignore spaces */ };
-
-.  					{  /* ignore bad symbols and new line */ };
+.					{  printf("unknown token : %s\n",yytext);/* ignore bad symbols and new line */ };
 
 
 
@@ -113,9 +112,10 @@ static void comment_check()
 		        return;
 
 		    if (current_character == 0)			/* if detected null character */
-		        break;
+			break;
+			
 		}
-    
+
 	}
 yyerror("comment not closed properly !");
 

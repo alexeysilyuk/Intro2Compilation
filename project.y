@@ -29,11 +29,11 @@
 
 
 
-main : program {printf("FINAL DONE\n");};
+main : program {printf("DONE!!! \n");};
 
 program
-	:head_declaration {/*printf("head_declaration\n"); */}
-	|head_declaration program { /*printf("head_declaration recursion\n"); */}
+	:head_declaration 
+	|head_declaration program 
 	;
 
 
@@ -48,9 +48,10 @@ declaration
 
 line_statement
 	: line_statement ';'
-	| declaration
-	| declarator_initialization  
-	| RETURN complex_expression 
+	| declaration ';'
+	| declarator_initialization  ';' 
+	| RETURN ';'
+	| RETURN complex_expression ';'
 	;
 
 functions
@@ -118,42 +119,50 @@ for_block_boolean_expr
 /* MUST FINISH */
 
 /* Boolean */
-boolean_expr:
-		 boolean_expr AND boolean_expr_complex
-		|boolean_expr OR boolean_expr_complex
-		|boolean_expr_complex
-		|bool_unary_op boolean_expr_complex
+boolean_expr
+		: boolean_expr AND boolean_expr_complex
+		| boolean_expr OR boolean_expr_complex
+		| boolean_expr_complex
+		| bool_unary_op boolean_expr_complex
 		;
 
-boolean_expr_complex:
-		boolean_expr_complex bool_binary_op boolean_expr_simple
-		|boolean_expr_simple
-		;
-
-
-boolean_expr_simple:
-		complex_expression
-		|'(' boolean_expr ')'
-		;
-
-bool_binary_op:
-		EQUAL
-		|NOT_EQUAL
-		|LESS_THEN
-		|LESS_EQUAL
-		|GREAT_THEN
-		|GREAT_EQUAL
-		;
-
-bool_unary_op:
-		NOT
+boolean_expr_complex
+		: boolean_expr_complex bool_binary_op boolean_expr_simple
+		| boolean_expr_simple
 		;
 
 
-user_function:
-		type declarator '{' program '}'
-		|type declarator '{' '}'
+boolean_expr_simple
+		: complex_expression
+		| '(' boolean_expr ')'
 		;
+
+bool_binary_op
+		: EQUAL
+		| NOT_EQUAL
+		| LESS_THEN
+		| LESS_EQUAL
+		| GREAT_THEN
+		| GREAT_EQUAL
+		;
+
+bool_unary_op
+		: NOT
+		;
+
+
+user_function
+	: type function_result '{' '}'
+	| type function_result '{' program '}'
+	;
+
+/* to solve '(' conflict here */
+function_result
+	:IDENTIFIER '(' ')'
+	|IDENTIFIER '(' parameters_list ')' 
+	;
+
+	
 
 /* CHANGES ENDS */
 
@@ -178,36 +187,34 @@ initializator
 
 
 complex_expression
-	:'(' complex_expression ')'
-	|basic_expression
-	|basic_expression operator complex_expression
+	: '(' complex_expression ')'
+	| basic_expression
+	| basic_expression operator complex_expression
 	;
 
 basic_expression
-	:function_result
-	|terminal_const_values
-	|IDENTIFIER
-	|IDENTIFIER '[' INT_CONSTANT_VALUE ']'
+	: function_result
+	| terminal_const_values
+	| IDENTIFIER
+	| IDENTIFIER '[' INT_CONSTANT_VALUE ']'
 	| '|' IDENTIFIER '|'
 	;
 
-function_result
-	:IDENTIFIER '(' ')'
-	|IDENTIFIER '(' parameters_list ')' 
-	;
-	
+
 parameters_list
-	:complex_expression
-	|complex_expression ',' parameters_list
+	: complex_expression
+	| type complex_expression
+	| complex_expression ',' parameters_list
+	| type complex_expression ',' parameters_list
 	;
 
 terminal_const_values
-	:INT_CONSTANT_VALUE
-	|BOOL_CONSTANT_VALUE
-	|BIN_CONSTANT_VALUE
-	|OCT_CONSTANT_VALUE
-	|HEX_CONSTANT_VALUE
-	|literals
+	: INT_CONSTANT_VALUE
+	| BOOL_CONSTANT_VALUE
+	| BIN_CONSTANT_VALUE
+	| OCT_CONSTANT_VALUE
+	| HEX_CONSTANT_VALUE
+	| literals
 	;
 
 literals
@@ -217,55 +224,57 @@ literals
 
 
 declarator
-	:IDENTIFIER
-	|declarator '(' ')'
-	|declarator '(' params_types_list ')'
-	|declarator '[' ']'
-	|declarator '[' array_size ']'
+	: IDENTIFIER
+	| declarator '(' ')'
+	| declarator '(' params_types_list ')'
+	| declarator '[' ']'
+	| declarator '[' array_size ']'
 	;
 
 params_types_list
-	:type
-	|params_types_list ',' type
-	|type IDENTIFIER
-	|params_types_list ',' type IDENTIFIER
+	: type
+	| params_types_list ',' type
+	| type IDENTIFIER
+	| params_types_list ',' type IDENTIFIER
 	;
 	
 	
 
 array_size
-	:array_size ',' INT_CONSTANT_VALUE
-	|complex_expression
+	: array_size ',' INT_CONSTANT_VALUE
+	| complex_expression
 	;
 
 /*numeric_expression
-	:'(' numeric_expression ')'
-	|'(' numeric_expression ')' operator numeric_expression
-	|numeric_expression PLUS_OP numeric_expression {$$=$1+$3;}
-	|numeric_expression MINUS_OP numeric_expression {$$=$1-$3;}
-	|numeric_expression MULT_OP numeric_expression {$$=$1*$3;}
-	|numeric_expression DIVISION_OP numeric_expression {$$=$1/$3;}
-	|INT_CONSTANT_VALUE {$$=$1;}
+	: '(' numeric_expression ')'
+	| '(' numeric_expression ')' operator numeric_expression
+	| numeric_expression PLUS_OP numeric_expression {$$=$1+$3;}
+	| numeric_expression MINUS_OP numeric_expression {$$=$1-$3;}
+	| numeric_expression MULT_OP numeric_expression {$$=$1*$3;}
+	| numeric_expression DIVISION_OP numeric_expression {$$=$1/$3;}
+	| INT_CONSTANT_VALUE {$$=$1;}
 	; 
 */
 
 
 
 type
-	:BOOLEAN_TYPE 
-	|CHAR_TYPE
-	|VOID
-	|INT
-	|INTP    
-	|CHARP
-	|STRING
+	: VOID
+	| STRING
+	| BOOLEAN_TYPE
+	| CHAR_TYPE
+	| INT
+	| INTP    
+	| CHARP
 	;
 
+
+
 operator
-	:MINUS_OP
-	|PLUS_OP
-	|DIVISION_OP
-	|MULT_OP
+	: MINUS_OP
+	| PLUS_OP
+	| DIVISION_OP
+	| MULT_OP
 	;
 
 
