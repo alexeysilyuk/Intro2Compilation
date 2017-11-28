@@ -3,23 +3,13 @@
 	#define YYPRINT(file, type, value) fprint(file, "%d", value);
 
 %}
+
 %left MINUS_OP,  PLUS_OP
 %left DIVISION_OP, MULT_OP
 
-%token BOOLEAN_TYPE
-%token CHAR_TYPE
-%token VOID
-%token INT
-%token STRING
-%token INTP
-%token CHARP
-%token IF
-%token ELSE
-%token WHILE
-%token DO
-%token FOR
-%token RETURN
-%token _NULL
+%token BOOLEAN_TYPE, CHAR_TYPE, INT, VOID, STRING,  INTP, CHARP
+%token IF, ELSE, WHILE, DO, FOR
+%token RETURN,  _NULL, MAIN
 %token AND, DIVISION_OP, ASSIGNMENT, EQUAL, GREAT_THEN, GREAT_EQUAL, LESS_THEN
 %token LESS_EQUAL, MINUS_OP, NOT, NOT_EQUAL, OR, PLUS_OP, MULT_OP,BITWISE_AND, BITWISE_XOR
 %token IDENTIFIER, STRING_VALUE, CHAR_LITERAL, POINTER_ADDRESS
@@ -32,31 +22,32 @@
 main : program {printf("DONE!!! \n");};
 
 program
-	:head_declaration 
-	|head_declaration program 
+	: head_declaration 
+	| head_declaration program 
 	;
 
 
 head_declaration
-	: line_statement
-	| functions
-	;
-
-declaration
-	: type list_of_declarators
+	: functions 
+	| line_statement
+	| '{' program '}'
 	;
 
 line_statement
-	: line_statement ';'
-	| declaration ';'
-	| declarator_initialization  ';' 
-	| RETURN ';'
-	| RETURN complex_expression ';'
+	: declaration  /* done */
+	| declarator_initialization ';'  /* done */
+	| RETURN ';' /* done */
+	| RETURN expression ';' /* done */
 	;
 
 functions
-	:builtin_functions
-	|user_function
+	: builtin_functions 
+	| user_function 
+	|
+	;
+
+declaration
+	: type list_of_declarators ';'
 	;
 
 builtin_functions
@@ -116,9 +107,7 @@ for_block_boolean_expr
 	| boolean_expr ',' for_block_boolean_expr
 	;
 
-/* MUST FINISH */
 
-/* Boolean */
 boolean_expr
 		: boolean_expr AND boolean_expr_complex
 		| boolean_expr OR boolean_expr_complex
@@ -134,7 +123,6 @@ boolean_expr_complex
 
 boolean_expr_simple
 		: complex_expression
-		| '(' boolean_expr ')'
 		;
 
 bool_binary_op
@@ -152,52 +140,63 @@ bool_unary_op
 
 
 user_function
-	: type function_result '{' '}'
-	| type function_result '{' program '}'
+	: type IDENTIFIER '(' ')' '{' '}'
+	| type IDENTIFIER '(' params_types_list ')' '{' '}'
+	| type IDENTIFIER '(' ')' '{' program '}'
+	| type IDENTIFIER '(' params_types_list ')' '{' program '}'
+	| VOID MAIN '(' params_types_list ')' '{' program '}'
+	| VOID MAIN '('  ')' '{' program '}'	
 	;
 
-/* to solve '(' conflict here */
-function_result
-	:IDENTIFIER '(' ')'
-	|IDENTIFIER '(' parameters_list ')' 
+/* done */
+function_call
+	: IDENTIFIER '(' ')'
+	| IDENTIFIER '(' function_call_parameters_list ')' 
 	;
-
+/* done */
+function_call_parameters_list
+	: complex_expression
+	| complex_expression ',' parameters_list
+	;
 	
 
-/* CHANGES ENDS */
 
 
+/* done */
 list_of_declarators
-	:declarator_initialization
-	|list_of_declarators ',' declarator_initialization
+	: declarator_initialization
+	| list_of_declarators ',' declarator_initialization
 	;
-
+/* done */
 declarator_initialization
-	:declarator ASSIGNMENT initializator 
-	|declarator
+	: declarator ASSIGNMENT initializator 
+	| declarator
 	;
 
-
+/* done */
 initializator
-	: BITWISE_AND IDENTIFIER	
-	| BITWISE_XOR IDENTIFIER
-	|_NULL	
-	|complex_expression
+	: bitwize_operators IDENTIFIER	
+	| _NULL	
+	| expression
+	| bitwize_operators '(' initializator ')'
 	;
 
 
+
+/* done */
 complex_expression
-	: '(' complex_expression ')'
-	| basic_expression
+	: basic_expression
 	| basic_expression operator complex_expression
+	
 	;
-
+/* done */
 basic_expression
-	: function_result
+	: function_call 
 	| terminal_const_values
-	| IDENTIFIER
 	| IDENTIFIER '[' INT_CONSTANT_VALUE ']'
+	| IDENTIFIER
 	| '|' IDENTIFIER '|'
+	| '(' boolean_expr ')'
 	;
 
 
@@ -222,11 +221,9 @@ literals
 	| STRING_VALUE
 	;
 
-
+	;
 declarator
 	: IDENTIFIER
-	| declarator '(' ')'
-	| declarator '(' params_types_list ')'
 	| declarator '[' ']'
 	| declarator '[' array_size ']'
 	;
@@ -238,7 +235,7 @@ params_types_list
 	| params_types_list ',' type IDENTIFIER
 	;
 	
-	
+
 
 array_size
 	: array_size ',' INT_CONSTANT_VALUE
@@ -259,15 +256,13 @@ array_size
 
 
 type
-	: VOID
-	| STRING
+	: STRING
 	| BOOLEAN_TYPE
 	| CHAR_TYPE
 	| INT
-	| INTP    
+	| INTP
 	| CHARP
 	;
-
 
 
 operator
@@ -277,6 +272,16 @@ operator
 	| MULT_OP
 	;
 
+bitwize_operators
+	: BITWISE_AND	
+	| BITWISE_XOR
+	;
+
+/* not done */
+expression
+	: /*complex_expression
+	|*/ boolean_expr
+	;
 
 /*
 builtin_function   

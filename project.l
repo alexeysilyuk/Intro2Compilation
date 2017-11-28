@@ -25,6 +25,7 @@ int return INT;
 string return STRING;
 intp return INTP;
 charp return CHARP;
+main return MAIN;
 
 
 if return IF;
@@ -49,21 +50,14 @@ true|false 		{ return BOOL_CONSTANT_VALUE;}
 {LETTER}({LETTER}|{DIG}|[_])*  return IDENTIFIER; 
 
 
+
 "\""([\\\?!.,/@#$%^&*+=-_<>`~]|{LETTER}|{DIG}|{WHITESPACE})*"\""  return STRING_VALUE;
 "\'"([\\\ ?!.,/@#$%^&*\n+=-_<>`~]|{LETTER}|{DIG})"\'"	return CHAR_LITERAL; /* check if whitespace allowed*/
 
 '&'{HEXPREF}{HEX}+	return POINTER_ADDRESS;
 
 
-;	return ';';
-,       return ',';
-\| 	return '|';
-\(	return '('; 
-\)	return ')'; 
-\{	return '{'; 
-\}	return '}'; 
-\[	return '['; 
-\]	return ']'; 
+[;,\|\(\)\{\}\[\]]	return yytext[0]; 
 
 "&&" return AND;
 "/" return DIVISION_OP;
