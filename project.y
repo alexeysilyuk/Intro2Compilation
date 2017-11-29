@@ -28,9 +28,19 @@ program
 
 
 head_declaration
-	: functions 
+	:code_block
+	|functions 
 	| line_statement
-	| '{' program '}'
+	;
+
+code_block:
+	 '{' program '}'
+	|'{' '}'
+	;
+
+functions
+	: builtin_functions 
+	| user_function 
 	;
 
 line_statement
@@ -38,13 +48,10 @@ line_statement
 	| declarator_initialization ';'  /* done */
 	| RETURN ';' /* done */
 	| RETURN expression ';' /* done */
+	|function_call ';'
 	;
 
-functions
-	: builtin_functions 
-	| user_function 
-	|
-	;
+
 
 declaration
 	: type list_of_declarators ';'
@@ -63,29 +70,29 @@ loop_functions
 
 if_block
 	: IF '(' boolean_expr ')' line_statement  
-	| IF '(' boolean_expr ')' '{' program '}' 
+	| IF '(' boolean_expr ')' code_block 
 	| IF '(' boolean_expr ')' line_statement  else_block
-	| IF '(' boolean_expr ')' '{' program '}' else_block	
+	| IF '(' boolean_expr ')' code_block else_block	
 	;
 
 else_block
 	: ELSE line_statement
-	| ELSE '{' program '}'
+	| ELSE code_block
 	;
 
 while_block
 	: WHILE '(' boolean_expr ')' line_statement
-	| WHILE '(' boolean_expr ')' '{' program '}'
+	| WHILE '(' boolean_expr ')' code_block
 	;
 
 do_while_block
 	: DO line_statement  WHILE '(' boolean_expr ')' ';'
-	| DO '{' program '}'  WHILE '(' boolean_expr ')' ';'
+	| DO code_block  WHILE '(' boolean_expr ')' ';'
 	;
 
 for_block
 	: FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' line_statement
-	| FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' '{' program '}'
+	| FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' code_block
 	;
 
 for_block_inits
@@ -140,12 +147,10 @@ bool_unary_op
 
 
 user_function
-	: type IDENTIFIER '(' ')' '{' '}'
-	| type IDENTIFIER '(' params_types_list ')' '{' '}'
-	| type IDENTIFIER '(' ')' '{' program '}'
-	| type IDENTIFIER '(' params_types_list ')' '{' program '}'
-	| VOID MAIN '(' params_types_list ')' '{' program '}'
-	| VOID MAIN '('  ')' '{' program '}'	
+	: type IDENTIFIER '(' ')' code_block
+	| type IDENTIFIER '(' params_types_list ')' code_block
+	| VOID MAIN '(' params_types_list ')' code_block
+	| VOID MAIN '('  ')' code_block	
 	;
 
 /* done */
@@ -174,13 +179,11 @@ declarator_initialization
 	;
 
 /* done */
-initializator
-	: bitwize_operators IDENTIFIER	
+initializator: 
 	| _NULL	
 	| expression
-	| bitwize_operators '(' initializator ')'
+	| bitwize_operators  initializator 
 	;
-
 
 
 /* done */

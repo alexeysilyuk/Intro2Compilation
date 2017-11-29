@@ -119,6 +119,7 @@ void main() {
 
 ////
 
+
 int foo(int i, int j, int k) {
 	intp i;
 	boolean fee(int l, int i, char n) {
@@ -126,6 +127,7 @@ int foo(int i, int j, int k) {
 	}
 	return 0 ;
 }
+
 
 ////
 
@@ -184,12 +186,16 @@ int foo() {
 	return 0;
 }
 
+
+
 ////
 
 int foo() { return 0; }
 int foo_2() { int a; a =2; return a; }
 int foo_3() {  return foo(); }
 int foo_4() { if(true) { return 4; } return 10; }
+
+
 
 ////
 {
@@ -207,17 +213,20 @@ x=^(p + 5);
 if(!false)
 	int x= 1;
 }
-////
-/*
-a = foo(i,j);
-goo("hello");
 
-////
+
+
+
+
+//// 
+
+a = foo(i,j);
 charp z;
 intp y;
 y  = &x;
 z = "foobar";
-z = &z[5];
+goo("hello");
 z = ^(z-5);
-*/
+z = &z[5];
 
+/**/
