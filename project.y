@@ -227,7 +227,7 @@ basic_expression
 	: function_call { $$ = mknode("SIMPLE_EXPRESSION", $1, NULL, NULL, NULL); }
 	| terminal_const_values { $$ = mknode("SIMPLE_EXPRESSION", $1, NULL, NULL, NULL); }
 	| IDENTIFIER '[' INT_CONSTANT_VALUE ']' { $$ = mknode("SIMPLE_EXPRESSION", $1, $3, NULL, NULL); }
-	| IDENTIFIER { $$ = mknode("ID", $1, NULL, NULL, NULL); }
+	| IDENTIFIER { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
 	| '|' IDENTIFIER '|' { $$ = mknode("SIMPLE_EXPRESSION", $2, NULL, NULL, NULL); }
 	| '(' boolean_expr ')' { $$ = mknode("SIMPLE_EXPRESSION", $2, NULL, NULL, NULL); }
 	;
@@ -241,17 +241,17 @@ parameters_list
 	;
 
 terminal_const_values
-	: INT_CONSTANT_VALUE { $$ = mknode("CONST", $1, NULL, NULL, NULL); }
-	| BOOL_CONSTANT_VALUE { $$ = mknode("CONST", $1, NULL, NULL, NULL); }
-	| BIN_CONSTANT_VALUE { $$ = mknode("CONST", $1, NULL, NULL, NULL); }
-	| OCT_CONSTANT_VALUE { $$ = mknode("CONST", $1, NULL, NULL, NULL); }
-	| HEX_CONSTANT_VALUE { $$ = mknode("CONST", $1, NULL, NULL, NULL); }
+	: INT_CONSTANT_VALUE { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
+	| BOOL_CONSTANT_VALUE { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
+	| BIN_CONSTANT_VALUE { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
+	| OCT_CONSTANT_VALUE { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
+	| HEX_CONSTANT_VALUE { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
 	| literals { $$ = mknode("CONST", $1, NULL, NULL, NULL); }
 	;
 
 literals
-	: CHAR_LITERAL { $$ = mknode("LITERAL", $1, NULL, NULL, NULL); }
-	| STRING_VALUE { $$ = mknode("LITERAL", $1, NULL, NULL, NULL); }
+	: CHAR_LITERAL { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
+	| STRING_VALUE { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
 	;
 
 	;
@@ -299,15 +299,15 @@ type
 
 
 operator
-	: MINUS_OP { $$ = mknode("OP", $1, NULL, NULL, NULL); }
-	| PLUS_OP { $$ = mknode("OP", $1, NULL, NULL, NULL); }
-	| DIVISION_OP { $$ = mknode("OP", $1, NULL, NULL, NULL); }
-	| MULT_OP { $$ = mknode("OP", $1, NULL, NULL, NULL); }
+	: MINUS_OP { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
+	| PLUS_OP { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
+	| DIVISION_OP { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
+	| MULT_OP { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
 	;
 
 bitwize_operators
-	: BITWISE_AND { $$ = mknode("OP", $1, NULL, NULL, NULL); }
-	| BITWISE_XOR { $$ = mknode("OP", $1, NULL, NULL, NULL); }
+	: BITWISE_AND { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
+	| BITWISE_XOR { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
 	;
 
 /* not done */

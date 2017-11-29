@@ -1,4 +1,3 @@
-
 if (x>y) {
 	x = x + f;
 }
@@ -7,8 +6,8 @@ else {
 	x = z + (c + n)*2;
 	z = f;
 }
-
-/*boolean x = (x==3)&& (x==3+3) ,y =x ;
+/*
+boolean x = (x==3)&& (x==3+3) ,y =x ;
 return;
 return ((x==3)&& (x==3)+3) ;
 
@@ -237,5 +236,4 @@ z = "foobar";
 goo("hello");
 z = ^(z-5);
 z = &z[5];
-
 */
