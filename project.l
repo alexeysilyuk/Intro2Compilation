@@ -10,12 +10,16 @@ WHITESPACE [ \t\n\r]
 
 %{
 #include <stdio.h>
+#include "y.tab.h"
 
 
 extern void yyerror(const char *);  /* prints grammar violation message */
 static void comment_check(void);
 
 %}
+
+%option yylineno
+
 %%
 
 boolean return BOOLEAN_TYPE;
@@ -115,4 +119,8 @@ yyerror("comment not closed properly !");
 
 }
 
-
+void yyerror(const char *s)
+{
+	fflush(stdout);
+	printf("At line %d %s \n", yylineno, s);
+}

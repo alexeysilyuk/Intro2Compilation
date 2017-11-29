@@ -20,6 +20,7 @@ node* mk_node (char* token, node* child);
 
 void printTree (node* tree, int space);
 
+
 #define YYSTYPE struct node*
 
 %}
@@ -42,6 +43,7 @@ void printTree (node* tree, int space);
 %token LESS_EQUAL, MINUS_OP, NOT, NOT_EQUAL, OR, PLUS_OP, MULT_OP,BITWISE_AND, BITWISE_XOR
 %token IDENTIFIER, STRING_VALUE, CHAR_LITERAL, POINTER_ADDRESS
 %token INT_CONSTANT_VALUE, BOOL_CONSTANT_VALUE, BIN_CONSTANT_VALUE, OCT_CONSTANT_VALUE, HEX_CONSTANT_VALUE
+
 
 %%
 
@@ -330,12 +332,6 @@ others
 	;*/
 %%
 #include "lex.yy.c"
-
-void yyerror(const char *s)
-{
-	fflush(stdout);
-	printf("*** %s\n", s);
-}
 
 int main(){yydebug=1; return yyparse(); }
 
