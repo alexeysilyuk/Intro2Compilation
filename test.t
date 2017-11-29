@@ -1,5 +1,14 @@
 
-boolean x = (x==3)&& (x==3+3) ,y =x ;
+if (x>y) {
+	x = x + f;
+}
+else {
+	y = x + y + z;
+	x = z + (c + n)*2;
+	z = f;
+}
+
+/*boolean x = (x==3)&& (x==3+3) ,y =x ;
 return;
 return ((x==3)&& (x==3)+3) ;
 
@@ -229,4 +238,4 @@ goo("hello");
 z = ^(z-5);
 z = &z[5];
 
-/**/
+*/
