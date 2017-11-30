@@ -51,7 +51,7 @@ true|false 		{ return BOOL_CONSTANT_VALUE;}
 '0'{OCT}*    		{ return OCT_CONSTANT_VALUE;}
 {HEXPREF}{HEX}+		{ return HEX_CONSTANT_VALUE;}
 
-{LETTER}({LETTER}|{DIG}|[_])*  return IDENTIFIER; 
+{LETTER}({LETTER}|{DIG}|[_])*  {/*yylval.string = strdup(yytext);*/ return IDENTIFIER; }
 
 
 
@@ -61,7 +61,7 @@ true|false 		{ return BOOL_CONSTANT_VALUE;}
 '&'{HEXPREF}{HEX}+	return POINTER_ADDRESS;
 
 
-[;,\|\(\)\{\}\[\]]	return yytext[0]; 
+[;,\|\(\)\{\}\[\]]	{ /*yylval.string = strdup(yytext[0]);*/ return yytext[0]; }
 
 "&&" return AND;
 "/" return DIVISION_OP;
@@ -85,8 +85,9 @@ true|false 		{ return BOOL_CONSTANT_VALUE;}
 "//".*                                  {  }
 
 
+
 {WHITESPACE}+				{ /* ignore spaces */ };
-.					{  printf("unknown token : %s\n",yytext);/* ignore bad symbols and new line */ };
+.					{  printf("Unknown token "); yyerror(yytext);/* ignore bad symbols and new line */ };
 
 
 
@@ -96,31 +97,31 @@ int yywrap(void)
     return 1;
 }
 
-static void comment_check()
+
+
+void comment_check()
 {
-    int current_character;
-
-    while ((current_character = input()) != 0){ /* if have chars in input stream, not null */
-
-		if (current_character == '*')		/* find comment block closing template */
-		{		
-		    while ((current_character = input()) == '*'); /* ignote more than one '*' character */
-		        
-		    if (current_character == '/')		/* comment block closed correctly */
-		        return;
-
-		    if (current_character == 0)			/* if detected null character */
-			break;
-			
+char c=input();
+while(c != EOF ){
+	
+	if(c=='*'){
+		while((c=input())=='*');
+		if(c=='/')
+			{
+			c=input();
+			return;
 		}
+	}	
 
-	}
-yyerror("comment not closed properly !");
 
+	c=input();
+}
+yyerror("Comment block not closed");
 }
 
 void yyerror(const char *s)
 {
 	fflush(stdout);
-	printf("At line %d %s \n", yylineno, s);
+	printf("\'%s\' at line %d  \n",s, yylineno);
+	exit(1);
 }

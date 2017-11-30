@@ -24,8 +24,11 @@ void printTree (node* tree, int space);
 #define YYSTYPE struct node*
 
 %}
-
-
+/*%union {
+  char* string;
+  struct node* node;
+}
+*/
 %start main
 %{
 	#define YYPRINT(file, type, value) fprint(file, "%d", value);
@@ -36,15 +39,23 @@ void printTree (node* tree, int space);
 %left DIVISION_OP, MULT_OP
 
 
-%token BOOLEAN_TYPE, CHAR_TYPE, INT, VOID, STRING,  INTP, CHARP
-%token IF, ELSE, WHILE, DO, FOR
-%token RETURN,  _NULL, MAIN
-%token AND, DIVISION_OP, ASSIGNMENT, EQUAL, GREAT_THEN, GREAT_EQUAL, LESS_THEN
-%token LESS_EQUAL, MINUS_OP, NOT, NOT_EQUAL, OR, PLUS_OP, MULT_OP,BITWISE_AND, BITWISE_XOR
-%token IDENTIFIER, STRING_VALUE, CHAR_LITERAL, POINTER_ADDRESS
-%token INT_CONSTANT_VALUE, BOOL_CONSTANT_VALUE, BIN_CONSTANT_VALUE, OCT_CONSTANT_VALUE, HEX_CONSTANT_VALUE
-
-
+%token /*<string>*/  BOOLEAN_TYPE, CHAR_TYPE, INT, VOID, STRING,  INTP, CHARP
+%token /*<string>*/  IF, ELSE, WHILE, DO, FOR
+%token /*<string>*/  RETURN,  _NULL, MAIN
+%token /*<string>*/  AND, DIVISION_OP, ASSIGNMENT, EQUAL, GREAT_THEN, GREAT_EQUAL, LESS_THEN
+%token /*<string>*/  LESS_EQUAL, MINUS_OP, NOT, NOT_EQUAL, OR, PLUS_OP, MULT_OP,BITWISE_AND, BITWISE_XOR
+%token /*<string>*/ IDENTIFIER
+%token /*<string>*/  STRING_VALUE, CHAR_LITERAL, POINTER_ADDRESS
+%token /*<string>*/  INT_CONSTANT_VALUE, BOOL_CONSTANT_VALUE, BIN_CONSTANT_VALUE, OCT_CONSTANT_VALUE, HEX_CONSTANT_VALUE
+/*%type <node> program head_declaration code_block functions line_statement declaration
+%type <node> builtin_functions loop_functions if_block else_block while_block do_while_block for_block
+%type <node> for_block_inits for_block_single_init for_block_inits_update for_block_boolean_expr boolean_expr
+%type <node> boolean_expr_complex boolean_expr_simple bool_binary_op bool_unary_op user_function function_call
+%type <node> function_call_parameters_list  list_of_declarators declarator_initialization initializator complex_expression
+%type <node> basic_expression parameters_list  terminal_const_values literals declarator params_types_list
+%type <node> array_size  type operator bitwise_operators expression other
+%type <string> yytext
+*/
 %%
 
 
@@ -58,9 +69,9 @@ program
 
 
 head_declaration
-	:code_block { $$ = mknode("HEAD", $1, NULL, NULL, NULL); }
-	|functions  { $$ = mknode("HEAD", $1, NULL, NULL, NULL); }
-	| line_statement { $$ = mknode("HEAD", $1, NULL, NULL, NULL); }
+	: code_block { $$ = mknode("HEAD", $1, NULL, NULL, NULL); }
+	| functions  { $$ = mknode("HEAD", $1, NULL, NULL, NULL); }
+	|  line_statement  { $$ = mknode("HEAD", $1, NULL, NULL, NULL); }
 	;
 
 code_block:
@@ -99,15 +110,14 @@ loop_functions
 	;
 
 if_block
-	: IF '(' boolean_expr ')' line_statement  { $$ = mknode("IF", $3, $5, NULL, NULL); }
-	| IF '(' boolean_expr ')' code_block  { $$ = mknode("IF", $3, $5, NULL, NULL); }
-	| IF '(' boolean_expr ')' line_statement  else_block { $$ = mknode("IF", $3, $5, $6, NULL); }
+	: IF '(' boolean_expr ')' line_statement  else_block { $$ = mknode("IF", $3, $5, $6, NULL); }
 	| IF '(' boolean_expr ')' code_block else_block	{ $$ = mknode("IF", $3, $5, $6, NULL); }
 	;
 
 else_block
 	: ELSE line_statement { $$ = mknode("ELSE", $2, NULL, NULL, NULL); }
 	| ELSE code_block { $$ = mknode("ELSE", $2, NULL, NULL, NULL); }
+	| 
 	;
 
 while_block
@@ -160,6 +170,7 @@ boolean_expr_complex
 
 boolean_expr_simple
 		: complex_expression { $$ = mknode("BOOLEAN_EXPR_SIMPLE", $1, NULL, NULL, NULL); }
+		| other 
 		;
 
 bool_binary_op
@@ -194,9 +205,6 @@ function_call_parameters_list
 	| complex_expression ',' parameters_list { $$ = mknode("FUNC_PARAM", $1, $3, NULL, NULL); }
 	;
 	
-
-
-
 /* done */
 list_of_declarators
 	: declarator_initialization { $$ = mknode("LIST_DECL", $1, NULL, NULL, NULL); }
@@ -209,10 +217,9 @@ declarator_initialization
 	;
 
 /* done */
-initializator: 
-	| _NULL	{ $$ = mknode("INIT", $1, NULL, NULL, NULL); }
-	| expression { $$ = mknode("INIT", $1, NULL, NULL, NULL); }
-	| bitwize_operators  initializator { $$ = mknode("INIT", $1, $2, NULL, NULL); } 
+initializator
+	: expression { $$ = mknode("INIT", $1, NULL, NULL, NULL); }
+
 	;
 
 
@@ -220,6 +227,7 @@ initializator:
 complex_expression
 	: basic_expression { $$ = mknode("EXPRESSION", $1, NULL, NULL, NULL); }
 	| basic_expression operator complex_expression { $$ = mknode("EXPRESSION", $1, $2, $3, NULL); }
+	| operator complex_expression { $$ = mknode("EXPRESSION", $1, $2, NULL, NULL); }
 	
 	;
 /* done */
@@ -230,6 +238,7 @@ basic_expression
 	| IDENTIFIER { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
 	| '|' IDENTIFIER '|' { $$ = mknode("SIMPLE_EXPRESSION", $2, NULL, NULL, NULL); }
 	| '(' boolean_expr ')' { $$ = mknode("SIMPLE_EXPRESSION", $2, NULL, NULL, NULL); }
+	| bitwise_operators  basic_expression { $$ = mknode("SIMPLE_EXPRESSION", $1, $2, NULL, NULL); } 
 	;
 
 
@@ -254,11 +263,12 @@ literals
 	| STRING_VALUE { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
 	;
 
-	;
+
 declarator
 	: IDENTIFIER { $$ = mknode("DECLARATOR", $1, NULL, NULL, NULL); }
 	| declarator '[' ']' { $$ = mknode("DECLARATOR", $1, $2, $3, NULL); }
 	| declarator '[' array_size ']'  { $$ = mknode("DECLARATOR", $1, $2, $3, $4); }
+	| bitwise_operators IDENTIFIER
 	;
 
 params_types_list
@@ -305,7 +315,7 @@ operator
 	| MULT_OP { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
 	;
 
-bitwize_operators
+bitwise_operators
 	: BITWISE_AND { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
 	| BITWISE_XOR { $$ = mknode(yytext, $1, NULL, NULL, NULL); }
 	;
@@ -325,11 +335,11 @@ builtin_function
 	|FOR  {printf("for");}
 	;
 */
-/*
-others
-	:RETURN {printf("return");}   
-	|_NULL {printf("null");}
-	;*/
+
+other
+	: RETURN
+	| _NULL 
+	;
 %%
 #include "lex.yy.c"
 
