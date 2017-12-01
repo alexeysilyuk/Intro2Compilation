@@ -22,14 +22,14 @@ static void comment_check(void);
 
 %%
 
-boolean return BOOLEAN_TYPE;
-char return CHAR_TYPE;
-void return VOID;
-int return INT;
-string return STRING;
-intp return INTP;
-charp return CHARP;
-main return MAIN;
+boolean { yylval.string = strdup(yytext);	return BOOLEAN_TYPE;};
+char    { yylval.string = strdup(yytext);	return CHAR_TYPE;};
+void    { yylval.string = strdup(yytext);	return VOID;};
+int     { yylval.string = strdup(yytext);	return INT;};
+string  { yylval.string = strdup(yytext);	return STRING;};
+intp    { yylval.string = strdup(yytext);	return INTP;};
+charp   { yylval.string = strdup(yytext);	return CHARP;};
+main    { yylval.string = strdup(yytext);	return MAIN;};
 
 
 if return IF;
@@ -39,46 +39,49 @@ while return WHILE;
 for return FOR;
 
 
-return return RETURN;
-null return _NULL;
+return { yylval.string = strdup(yytext); return RETURN;}
+null   { yylval.string = strdup(yytext); return _NULL;}
 
 
 
 
-true|false 		{ return BOOL_CONSTANT_VALUE;}
-{BIN}+"b"    		{ return BIN_CONSTANT_VALUE;}
-{DIGWZ}{DIG}*|0 	{ return INT_CONSTANT_VALUE;}
-'0'{OCT}*    		{ return OCT_CONSTANT_VALUE;}
-{HEXPREF}{HEX}+		{ return HEX_CONSTANT_VALUE;}
+true|false 		{ yylval.string = strdup(yytext); return BOOL_CONSTANT_VALUE; };
+{BIN}+"b"    		{ yylval.string = strdup(yytext); return BIN_CONSTANT_VALUE;};
+{DIGWZ}{DIG}*|0 	{ yylval.integer = atoi(yytext);  return INT_CONSTANT_VALUE;};
+'0'{OCT}*    		{ yylval.string = strdup(yytext); return OCT_CONSTANT_VALUE;};
+{HEXPREF}{HEX}+		{ yylval.string = strdup(yytext); return HEX_CONSTANT_VALUE;};
 
-{LETTER}({LETTER}|{DIG}|[_])*  {/*yylval.string = strdup(yytext);*/ return IDENTIFIER; }
+{LETTER}({LETTER}|{DIG}|[_])*  {yylval.string = strdup(yytext); return IDENTIFIER; }
 
 
 
-"\""([\\\?!.,/@#$%^&*+=-_<>`~]|{LETTER}|{DIG}|{WHITESPACE})*"\""  return STRING_VALUE;
-"\'"([\\\ ?!.,/@#$%^&*\n+=-_<>`~]|{LETTER}|{DIG})"\'"	return CHAR_LITERAL; /* check if whitespace allowed*/
+"\""([\\\?!.,/@#$%^&*+=-_<>`~]|{LETTER}|{DIG}|{WHITESPACE})*"\"" {yylval.string = strdup(yytext); return STRING_VALUE;};
+"\'"([\\\ ?!.,/@#$%^&*\n+=-_<>`~]|{LETTER}|{DIG})"\'"	{yylval.string = strdup(yytext); return CHAR_LITERAL;};
 
 '&'{HEXPREF}{HEX}+	return POINTER_ADDRESS;
 
 
-[;,\|\(\)\{\}\[\]]	{ /*yylval.string = strdup(yytext[0]);*/ return yytext[0]; }
+";"|","|"|"|"{"|"}"|"["|"]" return yytext[0];
+"("	{ yylval.string = strdup(yytext); return LP; };
+")"	{ yylval.string = strdup(yytext); return RP; };
 
-"&&" return AND;
-"/" return DIVISION_OP;
-"==" return EQUAL;
-"=" return ASSIGNMENT;
-">=" return GREAT_EQUAL;
-"<=" return LESS_EQUAL;
-">" return GREAT_THEN;
-"<" return LESS_THEN;
-"!=" return NOT_EQUAL;
-"!" return NOT;
-"||" return OR;
-"+" return PLUS_OP;
-"*" return MULT_OP;
-"&" return BITWISE_AND;
-"^" return BITWISE_XOR;
-"-" return MINUS_OP;
+
+"&&" {yylval.string = strdup(yytext); return AND; };
+"/" {yylval.string = strdup(yytext);  return DIVISION_OP;};
+"==" {yylval.string = strdup(yytext); return EQUAL;};
+"=" {yylval.string = strdup(yytext);  return ASSIGNMENT;};
+">=" {yylval.string = strdup(yytext); return GREAT_EQUAL;};
+"<=" {yylval.string = strdup(yytext); return LESS_EQUAL;};
+">" {yylval.string = strdup(yytext);  return GREAT_THEN;};
+"<" {yylval.string = strdup(yytext);  return LESS_THEN;};
+"!=" {yylval.string = strdup(yytext); return NOT_EQUAL;};
+"!" {yylval.string = strdup(yytext);  return NOT;};
+"||" {yylval.string = strdup(yytext); return OR;};
+"+" {yylval.string = strdup(yytext);  return PLUS_OP;};
+"*" {yylval.string = strdup(yytext);  return MULT_OP;};
+"&" {yylval.string = strdup(yytext);  return BITWISE_AND;};
+"^" {yylval.string = strdup(yytext);  return BITWISE_XOR;};
+"-" {yylval.string = strdup(yytext);  return MINUS_OP;};
 
 
 "/*"                                    { comment_check(); }

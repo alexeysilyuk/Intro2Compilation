@@ -27,11 +27,11 @@ done
 lex project.l;
 
 if [ "$trace" == 1 ]; then
-	yacc  -t project.y
+	yacc  -t -d project.y
 elif [ "$verbose" == 1 ]; then
-	yacc  -v project.y
+	yacc  -v -d project.y
 else
-	yacc  project.y
+	yacc -d project.y
 fi
 
 

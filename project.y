@@ -19,41 +19,53 @@ node* mk_node (char* token, node* child);
 void printTree (node* tree, int space);
 
 
-#define YYSTYPE struct node*
+/*#define YYSTYPE struct node**/
 
 %}
-/*%union {
+
+%union {
   char* string;
-  node* unionNode;
-}
-*/
+  node* node;
+  int integer;
+} 
+
 %start main
 %{
 	#define YYPRINT(file, type, value) fprint(file, "%d", value);
-
 %}
 
 %left MINUS_OP,  PLUS_OP
 %left DIVISION_OP, MULT_OP
 
-
-%token /*<string>*/  BOOLEAN_TYPE, CHAR_TYPE, INT, VOID, STRING,  INTP, CHARP
-%token /*<string>*/  IF, ELSE, WHILE, DO, FOR
-%token /*<string>*/  RETURN,  _NULL, MAIN
-%token /*<string>*/  AND, DIVISION_OP, ASSIGNMENT, EQUAL, GREAT_THEN, GREAT_EQUAL, LESS_THEN
-%token /*<string>*/  LESS_EQUAL, MINUS_OP, NOT, NOT_EQUAL, OR, PLUS_OP, MULT_OP,BITWISE_AND, BITWISE_XOR
-%token /*<string>*/ IDENTIFIER
-%token /*<string>*/  STRING_VALUE, CHAR_LITERAL, POINTER_ADDRESS
-%token /*<string>*/  INT_CONSTANT_VALUE, BOOL_CONSTANT_VALUE, BIN_CONSTANT_VALUE, OCT_CONSTANT_VALUE, HEX_CONSTANT_VALUE
-/*%type <node> program head_declaration code_block functions line_statement declaration
+%token <string>  LP , RP
+%token <string>  BOOLEAN_TYPE, CHAR_TYPE, INT, VOID, STRING,  INTP, CHARP
+%token <string>  IF, ELSE, WHILE, DO, FOR
+%token <string>  RETURN,  _NULL, MAIN
+%token <string>  AND, DIVISION_OP, ASSIGNMENT, EQUAL, GREAT_THEN, GREAT_EQUAL, LESS_THEN
+%token <string>  LESS_EQUAL, MINUS_OP, NOT, NOT_EQUAL, OR, PLUS_OP, MULT_OP,BITWISE_AND, BITWISE_XOR
+%token <string>  IDENTIFIER
+%token <string>  STRING_VALUE, CHAR_LITERAL, POINTER_ADDRESS
+%token <integer> INT_CONSTANT_VALUE
+%token <string>  BOOL_CONSTANT_VALUE, BIN_CONSTANT_VALUE, OCT_CONSTANT_VALUE, HEX_CONSTANT_VALUE
+/*
+%type <node> BOOLEAN_TYPE CHAR_TYPE INT VOID STRING  INTP CHARP
+%type <node>  IF  ELSE  WHILE  DO  FOR
+%type <node>  RETURN   _NULL  MAIN
+%type <node>  AND  DIVISION_OP  ASSIGNMENT  EQUAL  GREAT_THEN  GREAT_EQUAL  LESS_THEN
+%type <node>  LESS_EQUAL  MINUS_OP  NOT  NOT_EQUAL  OR  PLUS_OP  MULT_OP BITWISE_AND  BITWISE_XOR
+%type <node> IDENTIFIER
+%type <node>  STRING_VALUE  CHAR_LITERAL  POINTER_ADDRESS
+%type <node>  INT_CONSTANT_VALUE  BOOL_CONSTANT_VALUE  BIN_CONSTANT_VALUE  OCT_CONSTANT_VALUE  HEX_CONSTANT_VALUE
+*/
+%type <node> program head_declaration code_block functions line_statement declaration
 %type <node> builtin_functions loop_functions if_block else_block while_block do_while_block for_block
 %type <node> for_block_inits for_block_single_init for_block_inits_update for_block_boolean_expr boolean_expr
 %type <node> boolean_expr_complex boolean_expr_simple bool_binary_op bool_unary_op user_function function_call
 %type <node> function_call_parameters_list  list_of_declarators declarator_initialization initializator complex_expression
 %type <node> basic_expression parameters_list  terminal_const_values literals declarator params_types_list
-%type <node> array_size  type operator bitwise_operators expression other
-%type <string> yytext
-*/
+%type <node> array_size  type operator bitwise_operators expression other ID lp rp integer
+%type <string> '}' '{' ';' '[' ']' '(' ')'
+
 %%
 
 
@@ -73,8 +85,8 @@ head_declaration
 	;
 
 code_block:
-	 '{' program '}' { $$ = mknode("(BLOCK", $2, $3,1); }
-	|'{' '}' { $$ = mknode("(BLOCK", NULL, NULL, 0); }
+	 '{' program '}' { $$ = mknode("(BLOCK", $2, mknode(")", NULL, NULL, 1), 1); }
+	|'{' '}' { $$ = mknode("(BLOCK", NULL, NULL, 1); }
 	;
 
 functions
@@ -83,17 +95,18 @@ functions
 	;
 
 line_statement
-	: declaration { $$ = mknode("LINE_STATMENT", $1, NULL, 0); }  /* done */
-	| declarator_initialization ';' { $$ = mknode("LINE_STATMENT", $1, NULL,0); }   /* done */
-	| RETURN ';' { $$ = mknode("return", NULL, NULL,1); }  /* done */
-	| RETURN expression ';' { $$ = mknode("return", NULL, $2, 1); }  /* done */
-	|function_call ';' { $$ = mknode("LINE_STATMENT", $1, NULL,0); }
+	: declaration { $$ = mknode("LINE_STATEMENT", $1, NULL, 0); }  
+	| declarator_initialization ';' { $$ = mknode("LINE_STATEMENT", $1, NULL,0); }  
+	| RETURN ';' { $$ = mknode("return", NULL, NULL,1); } 
+	| RETURN expression ';' { $$ = mknode("return", $2, NULL, 1); }  
+	| function_call ';' { $$ = mknode("LINE_STATEMENT", $1, NULL,0); }
 	;
 
 
 
 declaration
-	: type list_of_declarators ';' { $$ = mknode("DECLARATION", $1, $2, 0); }
+	: type list_of_declarators ';' 
+		{$$ = mknode("(", $1, mknode(")",$2,mknode(")",NULL,NULL,1),0), 1); }
 	;
 
 builtin_functions
@@ -108,33 +121,38 @@ loop_functions
 	;
 
 if_block
-	: IF '(' boolean_expr ')' line_statement  else_block { $$ = mknode("(IF", mknode("(", $3, $5,1), $6, 1); }
-	| IF '(' boolean_expr ')' code_block else_block	{ $$ = mknode("(IF", mknode("(", $3, $5,1), $6,1); }
+	: IF lp boolean_expr rp line_statement  else_block 
+		{ $$ = mknode("(IF", mknode("(", $2, $3, 0), mknode(")", 
+			mknode("(BLOCK",$5,mknode(")",NULL,NULL,1),1)		
+			, $6, 1), 1); }
+	| IF lp boolean_expr rp code_block else_block	
+		{ $$ = mknode("(IF", mknode("(", $2, $3, 0), mknode(")", $5, $6, 1), 1); }
 	;
 
 else_block
-	: ELSE line_statement { $$ = mknode("ELSE", $2, NULL, 0); }
-	| ELSE code_block { $$ = mknode("ELSE", $2, NULL, 0); }
+	: ELSE line_statement { $$ = mknode("(BLOCK", $2, NULL, 0); }
+	| ELSE code_block { $$ = mknode("(BLOCK", $2, NULL, 0); }
 	| 
 	;
 
 while_block
-	: WHILE '(' boolean_expr ')' line_statement { $$ = mknode("(WHILE", $3, $5, 1); }
-	| WHILE '(' boolean_expr ')' code_block { $$ = mknode("WHILE", $3, $5, 1); }
+	: WHILE lp boolean_expr rp line_statement { $$ = mknode("(WHILE", $3, $5, 1); }
+	| WHILE lp boolean_expr rp code_block { $$ = mknode("WHILE", $3, $5, 1); }
 	;
 
 do_while_block
-	: DO line_statement  WHILE '(' boolean_expr ')' ';' { $$ = mknode("(DO_WHILE", $2, $5, 0); }
-	| DO code_block  WHILE '(' boolean_expr ')' ';' { $$ = mknode("(DO_WHILE", $2, $5, 0); }
+	: DO line_statement  WHILE lp boolean_expr rp ';' { $$ = mknode("(DO_WHILE", $2, $5, 0); }
+	| DO code_block  WHILE lp boolean_expr rp ';' { $$ = mknode("(DO_WHILE", $2, $5, 0); }
 	;
 
 for_block
-	: FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' line_statement 
+	: FOR lp for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update rp
+line_statement 
 	{ $$ = mknode("FOR", 
 		mknode("FOR", mknode("FOR", $3, $5, 0), $7, 0), 
 			    $9, 0); 
 	}
-	| FOR '(' for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update ')' code_block 		{ $$ = mknode("FOR", 
+	| FOR lp for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update rp code_block 		{ $$ = mknode("FOR", 
 		mknode("FOR", mknode("FOR", $3, $5, 0), $7, 0), 
 			    $9, 0); }
 	;
@@ -145,13 +163,13 @@ for_block_inits
 	;
 
 for_block_single_init
-	:IDENTIFIER ASSIGNMENT initializator { $$ = mknode("=", $1, $3, 1); }
+	:ID ASSIGNMENT initializator { $$ = mknode("=", $1, $3, 1); }
 	;
 
 for_block_inits_update
-	: IDENTIFIER ASSIGNMENT initializator { $$ = mknode("=", $1, $3, 1);  }
-	| IDENTIFIER ASSIGNMENT initializator ',' for_block_inits_update 
-	{ $$ = mknode(", ", mknode("=", $1, $3, 1), $5, 1);  }
+	: ID ASSIGNMENT initializator { $$ = mknode("=", $1, $3, 1);  }
+	| ID ASSIGNMENT initializator ',' for_block_inits_update 
+		{ $$ = mknode(", ", mknode("=", $1, $3, 1), $5, 1);  }
 	;
 
 for_block_boolean_expr
@@ -168,7 +186,8 @@ boolean_expr
 		;
 /* OP must print operator */
 boolean_expr_complex
-		: boolean_expr_complex bool_binary_op boolean_expr_simple { $$ = mknode("OP", $1, $3, 1); }
+		: boolean_expr_complex bool_binary_op boolean_expr_simple 
+			{ $$ = mknode($2->token, $1, $3, 1); }
 		| boolean_expr_simple { $$ = mknode("BOOLEAN_EXPR_COMPLEX", $1, NULL, 0); }
 		;
 
@@ -179,41 +198,40 @@ boolean_expr_simple
 		;
 
 bool_binary_op
-		: EQUAL 	{ $$ = mknode("==", NULL, NULL,1); }
-		| NOT_EQUAL 	{ $$ = mknode("!=", NULL, NULL,1); }
-		| LESS_THEN 	{ $$ = mknode("<", NULL,  NULL,1); }
-		| LESS_EQUAL 	{ $$ = mknode("<=", NULL,  NULL,1); }
-		| GREAT_THEN 	{ $$ = mknode(">", NULL,  NULL,1); }
-		| GREAT_EQUAL	{ $$ = mknode(">=", NULL,  NULL,1); }
+		: EQUAL 	{ $$ = mknode($1, NULL, NULL,1); }
+		| NOT_EQUAL 	{ $$ = mknode($1, NULL, NULL,1); }
+		| LESS_THEN 	{ $$ = mknode($1, NULL,  NULL,1); }
+		| LESS_EQUAL 	{ $$ = mknode($1, NULL,  NULL,1); }
+		| GREAT_THEN 	{ $$ = mknode($1, NULL,  NULL,1); }
+		| GREAT_EQUAL	{ $$ = mknode($1, NULL,  NULL,1); }
 		;
 
 bool_unary_op
-		: NOT { $$ = mknode("!", NULL, NULL,1); }
+		: NOT { $$ = mknode($1, NULL, NULL,1); }
 		;
 
 
 user_function
-	: type IDENTIFIER '(' ')' code_block 
-		{ $$ = mknode("(USER_FUNC", mknode("(USER_FUNC", $1, $2, 0),  $5, 1); 	}
-	| type IDENTIFIER '(' params_types_list ')' code_block 
+	: type ID lp rp code_block 
+		{ $$ = mknode($2->token, 
+				mknode("(USER_FUNC", $1, $2, 0),  $5, 0); 	}
+	| type ID lp params_types_list rp code_block 
 		{ $$ = mknode("USER_FUNC", 
-		mknode("USER_FUNC", mknode("USER_FUNC", $1, $2,0), $4,0), 
-				  $6,0); 
+				mknode("USER_FUNC", mknode("USER_FUNC", $1, $2,0), $4,0), 
+				  	$6,0); 
 		}
-	| VOID MAIN '(' params_types_list ')' code_block 
-		{ $$ = mknode("VOID_MAIN", 
-			mknode("VOID_MAIN", mknode("VOID_MAIN", $1, $2,0), $4,0), 
-				  	$6,0);  }
-	| VOID MAIN '('  ')' code_block	
-		{ $$ = mknode("(USER_FUNC", mknode("(USER_FUNC", $1, $2, 0),  $5, 1); 	}
+	| VOID MAIN lp params_types_list rp code_block 
+		{ $$ = mknode("VOID MAIN",mknode("(",$3,$4,0),mknode(")",$6,$5,0),1);   }
+	| VOID MAIN lp  rp code_block	
+		{ $$ = mknode("VOID MAIN",$3,mknode(")",$4,$5,0),1);  }
 	;
 
 
 function_call
-	: IDENTIFIER '(' ')' 
-		{ $$ = mknode("(FUNC_CALL IDENTIFIER", NULL, $1,1); }
-	| IDENTIFIER '(' function_call_parameters_list ')' 
-		{ $$ = mknode("(FUNC_CALL IDENTIFIER", $1, $3,1); }
+	: ID lp rp 
+		{ $$ = mknode($1->token, $2, $3,1); }
+	| ID lp function_call_parameters_list rp 
+		{ $$ = mknode($1->token, $2, mknode("",$3,$4,0),1); }
 	;
 
 function_call_parameters_list 
@@ -249,22 +267,28 @@ complex_expression
 	: basic_expression 
 		{ $$ = mknode("EXPRESSION", $1,  NULL,0); }
 	| basic_expression operator complex_expression 
-		{ $$ = mknode("Math_operator", $1, $3, 1); }
+		{ $$ = mknode($2->token, $1, $3, 1); }
 	| operator complex_expression 
-		{ $$ = mknode("Math_operator(Single left)", NULL, $2, 1); }
+		{ $$ = mknode($1->token, NULL, $2, 1); }
 	
 	;
 
 basic_expression
 	: function_call { $$ = mknode("SIMPLE_EXPRESSION", $1,  NULL,0); }
-	| terminal_const_values { $$ = mknode("TERMINAL_VALUE", $1, NULL,0); }
-	| IDENTIFIER '[' INT_CONSTANT_VALUE ']' { $$ = mknode("ID[i]", NULL, NULL,1); }
-	| IDENTIFIER { $$ = mknode("ID", NULL, NULL, 1); }
-	| '|' IDENTIFIER '|' { $$ = mknode("|ID|",  NULL, NULL,1); }
-	| '(' boolean_expr ')' { $$ = mknode("SIMPLE_EXPRESSION", NULL, $2, 0); }
+	| terminal_const_values { $$ = mknode($1->token, $1, NULL,0); }
+	| ID '[' integer ']' 
+		{ $$ = mknode($1->token, mknode("[",mknode($3->token,NULL,NULL,1),NULL,1),
+			mknode("]",NULL,NULL,1),1);
+		 }
+	| ID { $$ = mknode($1->token, NULL, NULL, 1); }
+	| '|' ID '|' { $$ = mknode("|ID|",  NULL, NULL,0); }
+	| lp boolean_expr rp { $$ = mknode("SIMPLE_EXPRESSION", NULL, $2, 0); }
 	| bitwise_operators  basic_expression 
-		{ $$ = mknode("bitwise_operator", $1, $2, 1); } 
+		{ $$ = mknode("bitwise_operator", $1, $2, 0); } 
 	;
+ 
+integer
+	: INT_CONSTANT_VALUE { $$ = mknode(yytext,NULL,NULL,1); };
 
 
 parameters_list
@@ -277,48 +301,50 @@ parameters_list
 	;
 
 terminal_const_values
-	: INT_CONSTANT_VALUE { $$ = mknode(yytext, $1, NULL,  1); }
-	| BOOL_CONSTANT_VALUE { $$ = mknode(yytext, $1, NULL, 1); }
-	| BIN_CONSTANT_VALUE { $$ = mknode(yytext, $1, NULL, 1); }
-	| OCT_CONSTANT_VALUE { $$ = mknode(yytext, $1, NULL, 1); }
-	| HEX_CONSTANT_VALUE { $$ = mknode(yytext, $1, NULL, 1); }
+	: INT_CONSTANT_VALUE { $$ = mknode(yytext, NULL, NULL,  1); }
+	| BOOL_CONSTANT_VALUE { $$ = mknode(yytext, NULL, NULL, 1); }
+	| BIN_CONSTANT_VALUE { $$ = mknode(yytext, NULL, NULL, 1); }
+	| OCT_CONSTANT_VALUE { $$ = mknode(yytext, NULL, NULL, 1); }
+	| HEX_CONSTANT_VALUE { $$ = mknode(yytext, NULL, NULL, 1); }
 	| literals { $$ = mknode("CONST", $1, NULL, 0); }
 	;
 
 literals
-	: CHAR_LITERAL { $$ = mknode(yytext, $1, NULL, 1); }
-	| STRING_VALUE { $$ = mknode(yytext, $1, NULL, 1); }
+	: CHAR_LITERAL { $$ = mknode(yytext, NULL, NULL, 1); }
+	| STRING_VALUE { $$ = mknode(yytext, NULL, NULL, 1); }
 	;
 
 
 declarator
-	: IDENTIFIER { $$ = mknode("ID", $1, NULL, 1); }
+	: ID { $$ = mknode("ID", $1, NULL, 0); }
 	| declarator '[' ']' 
-		{ $$ = mknode("ARRAY", $1,mknode("ID-ARRAY", $2, $3, 1),0); }
+		{ $$ = mknode("ARRAY", $1, mknode("[]", NULL,  NULL, 1),0); }
 	| declarator '[' array_size ']'  
-		{ $$ = mknode("ID-ARRAY[size]", $1,  $3, 1); }
-	| bitwise_operators IDENTIFIER 
-		{ $$ = mknode("BIT_OP", $1,  $2, 1); }
+		{ $$ = mknode("ID-ARRAY[size]", $1,  mknode("[", $3,  mknode("]", NULL,  NULL, 1), 1), 0); }
+	| bitwise_operators ID 
+		{ $$ = mknode("BIT_OP", $1,  $2, 0); }
 	;
 
 params_types_list
 	: type { $$ = mknode("TYPE", $1, NULL,0); }
 	| params_types_list ',' type { $$ = mknode("PARAM_TYPE_LIST", $1, $3, 0); }
-	| type IDENTIFIER { $$ = mknode("PARAM_TYPE_LIST", $1, $2, 1); }
-	| params_types_list ',' type IDENTIFIER 
-		{ $$ = mknode("PARAM_TYPE_LIST", $1, mknode("PARAM_TYPE_LIST", $3, $4, 1), 1); }
+	| type ID { $$ = mknode("PARAM_TYPE_LIST", $1, $2, 0); }
+	| params_types_list ',' type ID 
+		{ $$ = mknode("PARAM_TYPE_LIST", $1, mknode("PARAM_TYPE_LIST", $3, $4, 0), 0); }
 	;
 	
 
 
 array_size
-	: array_size ',' INT_CONSTANT_VALUE { $$ = mknode("ARRAY_SIZE", $1, $3, 1); }
-	| complex_expression { $$ = mknode("ARRAY_SIZE", $1, NULL,0); }
+	: array_size ',' INT_CONSTANT_VALUE 
+		{ $$ = mknode("ARRAY_SIZE", $1, mknode(yytext, NULL, NULL,  1), 1); }
+	| complex_expression 
+		{ $$ = mknode("ARRAY_SIZE", $1, NULL,0); }
 	;
 
 /*numeric_expression
-	: '(' numeric_expression ')'
-	| '(' numeric_expression ')' operator numeric_expression
+	: lp numeric_expression rp
+	| lp numeric_expression rp operator numeric_expression
 	| numeric_expression PLUS_OP numeric_expression {$$=$1+$3;}
 	| numeric_expression MINUS_OP numeric_expression {$$=$1-$3;}
 	| numeric_expression MULT_OP numeric_expression {$$=$1*$3;}
@@ -330,25 +356,25 @@ array_size
 
 
 type
-	: STRING { $$ = mknode("TYPE", $1, NULL, 1); }
-	| BOOLEAN_TYPE { $$ = mknode("TYPE", $1, NULL, 1); }
-	| CHAR_TYPE { $$ = mknode("TYPE", $1, NULL, 1); }
-	| INT { $$ = mknode("TYPE", $1, NULL, 1); }
-	| INTP { $$ = mknode("TYPE", $1, NULL, 1); }
-	| CHARP { $$ = mknode("TYPE", $1, NULL, 1); }
+	: STRING { $$ = mknode($1, NULL, NULL, 1); }
+	| BOOLEAN_TYPE { $$ = mknode($1, NULL, NULL, 1); }
+	| CHAR_TYPE { $$ = mknode($1, NULL, NULL, 1); }
+	| INT { $$ = mknode($1, NULL, NULL, 1); }
+	| INTP { $$ = mknode($1, NULL, NULL, 1); }
+	| CHARP { $$ = mknode($1, NULL, NULL, 1); }
 	;
 
 
 operator
-	: MINUS_OP { $$ = mknode(yytext, $1, NULL, 1); }
-	| PLUS_OP { $$ = mknode(yytext, $1, NULL, 1); }
-	| DIVISION_OP { $$ = mknode(yytext, $1, NULL, 1); }
-	| MULT_OP { $$ = mknode(yytext, $1, NULL, 1); }
+	: MINUS_OP { $$ = mknode($1, NULL, NULL, 1); }
+	| PLUS_OP { $$ = mknode($1, NULL, NULL, 1); }
+	| DIVISION_OP { $$ = mknode($1, NULL, NULL, 1); }
+	| MULT_OP { $$ = mknode($1, NULL, NULL, 1); }
 	;
 
 bitwise_operators
-	: BITWISE_AND { $$ = mknode(yytext, $1, NULL, 1); }
-	| BITWISE_XOR { $$ = mknode(yytext, $1, NULL, 1); }
+	: BITWISE_AND { $$ = mknode($1, NULL, NULL, 1); }
+	| BITWISE_XOR { $$ = mknode($1, NULL, NULL, 1); }
 	;
 
 /* not done */
@@ -368,8 +394,19 @@ builtin_function
 */
 
 other
-	: RETURN { $$ = mknode("other-return", NULL, NULL, 1); }
-	| _NULL  { $$ = mknode("other-null", NULL, NULL, 1); }
+	: RETURN { $$ = mknode($1, NULL, NULL, 1); }
+	| _NULL  { $$ = mknode($1, NULL, NULL, 1); }
+	;
+
+lp
+	: LP  		{ $$ = mknode($1, NULL, NULL, 1); }
+	;
+rp
+	: RP		{ $$ = mknode($1, NULL, NULL, 1); }
+	;
+
+ID
+	: IDENTIFIER { $$ = mknode($1, NULL, NULL,1); }
 	;
 %%
 #include "lex.yy.c"
@@ -393,15 +430,24 @@ node* mknode(char* token, node* left, node* right, int printHeader) {
 
 void printTree(node* tree, int space) {
 	int i;
-			if(tree->printHeader==1)
+		if(tree->printHeader==1)
 		{	
-			//for (i= 0; i< space; i++) { printf(" "); }
-			printf("%s ", tree->token);
+			for (i= 0; i< space; i++) 
+				{ printf("   "); }
+			printf("%s\n", tree->token);
 			space++;
-			printf("\n");
+			
+			if (tree->left) 
+				{   printTree(tree->left, space);  }
+			if (tree->right)
+				{   printTree(tree->right, space);}
+			
+			
 		}
+		else{
+			if (tree->left) {   printTree(tree->left, space); }
+			if (tree->right){   printTree(tree->right, space); }
 
-	if (tree->left) {   printTree(tree->left, space); }
-	if (tree->right){   printTree(tree->right, space); }
+		}
 	
 }
