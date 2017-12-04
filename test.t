@@ -1,4 +1,4 @@
-
+void main(){
 if (x>y) 
 	x = x + f;
 
@@ -7,22 +7,26 @@ else {
 
 }
 
-/*
+for(x=1,y=1; x>0 ; x++, y--,x=x+1)
+	x=2;
+
+
+
 intp s = &t;
 intp s = &(10+s);
 intp t=null;
 int x[];
 intp y[5];
 
-void main(){
+
 	if (null == null) 
 		char a='o';
 
 	intp x = &x;
-}
 
 
-void main(int x, int y){if (null == null) {
+
+int foo(int x, int y){if (null == null) {
 
 	intp x = &x;
 	goo("hello");
@@ -219,10 +223,7 @@ int foo () {
 	return 0 ;
 }
 
-void main() {
-	int a ;
-	a = foo () ;
-}
+
 
 
 
@@ -252,7 +253,7 @@ int foo(int i, char j, string k) {
 	int total;
 
 	k = 5;
-	total = i + quare(k)s;
+	total = i + quare(k);
 	return total - 10;
 }
 
@@ -266,7 +267,7 @@ int foo_4() { if(true) { return 4; } return 10; }
 a = foo(i,j);
 
 
-void main() {
+
 
 	int countSpaces(string s, int count) {
 			if (s == NULL) return count;
@@ -275,7 +276,7 @@ void main() {
 
 	string testStr = "This is test str";
 	res = countSpaces(testStr, l, xount);
-}
+
 
 //
 charp z; 
@@ -292,4 +293,4 @@ x = &y[5];
 //z = ^(x - 5); 
 y = "barfoo"; 
 
-*/
+}

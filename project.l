@@ -77,10 +77,12 @@ true|false 		{ yylval.string = strdup(yytext); return BOOL_CONSTANT_VALUE; };
 "!=" {yylval.string = strdup(yytext); return NOT_EQUAL;};
 "!" {yylval.string = strdup(yytext);  return NOT;};
 "||" {yylval.string = strdup(yytext); return OR;};
+"++" {yylval.string = strdup(yytext); return INCR;};
 "+" {yylval.string = strdup(yytext);  return PLUS_OP;};
 "*" {yylval.string = strdup(yytext);  return MULT_OP;};
 "&" {yylval.string = strdup(yytext);  return BITWISE_AND;};
 "^" {yylval.string = strdup(yytext);  return BITWISE_XOR;};
+"--" {yylval.string = strdup(yytext); return DECR;};
 "-" {yylval.string = strdup(yytext);  return MINUS_OP;};
 
 

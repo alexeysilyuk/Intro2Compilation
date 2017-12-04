@@ -14,7 +14,7 @@ typedef struct node {
 } node;
 
 
-node* mk_node (char* token, node* child);
+node* mknode (char* token, node* left, node* right, int printHeader);
 
 void printTree (node* tree, int space);
 
@@ -37,7 +37,7 @@ void printTree (node* tree, int space);
 %left MINUS_OP,  PLUS_OP
 %left DIVISION_OP, MULT_OP
 
-%token <string>  LP , RP
+%token <string>  LP , RP, INCR, DECR
 %token <string>  BOOLEAN_TYPE, CHAR_TYPE, INT, VOID, STRING,  INTP, CHARP
 %token <string>  IF, ELSE, WHILE, DO, FOR
 %token <string>  RETURN,  _NULL, MAIN
@@ -62,15 +62,20 @@ void printTree (node* tree, int space);
 %type <node> for_block_inits for_block_single_init for_block_inits_update for_block_boolean_expr boolean_expr
 %type <node> boolean_expr_complex boolean_expr_simple bool_binary_op bool_unary_op user_function function_call
 %type <node> function_call_parameters_list  list_of_declarators declarator_initialization initializator complex_expression
-%type <node> basic_expression parameters_list  terminal_const_values literals declarator params_types_list
-%type <node> array_size  type operator bitwise_operators expression other ID lp rp integer
-%type <string> '}' '{' ';' '[' ']' '(' ')'
-
+%type <node> basic_expression integer parameters_list  terminal_const_values literals declarator params_types_list
+%type <node> array_size  type operator bitwise_operators expression other ID lp rp inc_dec  main_program
 %%
 
 
 
-main : program {printf("DONE!!! \n"); printTree($1, 0);  };
+main : main_program {printf("DONE!!! \n"); printTree($1, 0);  };
+
+main_program 
+	: VOID MAIN lp params_types_list rp code_block 
+		{ $$ = mknode("VOID MAIN",mknode("(",$3,$4,0),mknode(")",$6,$5,0),1);   }
+	| VOID MAIN lp  rp code_block	
+		{ $$ = mknode("VOID MAIN",$3,mknode(")",$4,$5,0),1);  }
+	;
 
 program
 	: head_declaration { $$ = mknode("PROGRAM", $1, NULL,0); }
@@ -81,12 +86,12 @@ program
 head_declaration
 	: code_block { $$ = mknode("HEAD", $1, NULL, 0); }
 	| functions  { $$ = mknode("HEAD", $1, NULL, 0); }
-	|  line_statement  { $$ = mknode("HEAD", $1, NULL, 0); }
+	| line_statement  { $$ = mknode("HEAD", $1, NULL, 0); }
 	;
 
-code_block:
-	 '{' program '}' { $$ = mknode("(BLOCK", $2, mknode(")", NULL, NULL, 1), 1); }
-	|'{' '}' { $$ = mknode("(BLOCK", NULL, NULL, 1); }
+code_block
+	: '{' program '}' { $$ = mknode("(BLOCK", $2, mknode(")", NULL, NULL, 1), 1); }
+	| '{' '}' { $$ = mknode("(BLOCK", NULL, NULL, 1); }
 	;
 
 functions
@@ -132,7 +137,7 @@ if_block
 else_block
 	: ELSE line_statement { $$ = mknode("(BLOCK", $2, NULL, 0); }
 	| ELSE code_block { $$ = mknode("(BLOCK", $2, NULL, 0); }
-	| 
+	|  { $$ = mknode("epsilon", NULL, NULL, 0); }
 	;
 
 while_block
@@ -170,6 +175,10 @@ for_block_inits_update
 	: ID ASSIGNMENT initializator { $$ = mknode("=", $1, $3, 1);  }
 	| ID ASSIGNMENT initializator ',' for_block_inits_update 
 		{ $$ = mknode(", ", mknode("=", $1, $3, 1), $5, 1);  }
+	| ID inc_dec
+		{ $$ = mknode($2->token, $1, NULL, 1);  }
+	| ID inc_dec ',' for_block_inits_update 
+		{ $$ = mknode($2->token, $1, $4, 1);  }
 	;
 
 for_block_boolean_expr
@@ -188,7 +197,8 @@ boolean_expr
 boolean_expr_complex
 		: boolean_expr_complex bool_binary_op boolean_expr_simple 
 			{ $$ = mknode($2->token, $1, $3, 1); }
-		| boolean_expr_simple { $$ = mknode("BOOLEAN_EXPR_COMPLEX", $1, NULL, 0); }
+		| boolean_expr_simple 
+			{ $$ = mknode("BOOLEAN_EXPR_COMPLEX", $1, NULL, 0); }
 		;
 
 
@@ -220,10 +230,7 @@ user_function
 				mknode("USER_FUNC", mknode("USER_FUNC", $1, $2,0), $4,0), 
 				  	$6,0); 
 		}
-	| VOID MAIN lp params_types_list rp code_block 
-		{ $$ = mknode("VOID MAIN",mknode("(",$3,$4,0),mknode(")",$6,$5,0),1);   }
-	| VOID MAIN lp  rp code_block	
-		{ $$ = mknode("VOID MAIN",$3,mknode(")",$4,$5,0),1);  }
+	
 	;
 
 
@@ -274,15 +281,20 @@ complex_expression
 	;
 
 basic_expression
-	: function_call { $$ = mknode("SIMPLE_EXPRESSION", $1,  NULL,0); }
-	| terminal_const_values { $$ = mknode($1->token, $1, NULL,0); }
+	: function_call 
+		{ $$ = mknode("SIMPLE_EXPRESSION", $1,  NULL,0); }
+	| terminal_const_values 
+		{ $$ = mknode($1->token, $1, NULL,0); }
 	| ID '[' integer ']' 
 		{ $$ = mknode($1->token, mknode("[",mknode($3->token,NULL,NULL,1),NULL,1),
 			mknode("]",NULL,NULL,1),1);
 		 }
-	| ID { $$ = mknode($1->token, NULL, NULL, 1); }
-	| '|' ID '|' { $$ = mknode("|ID|",  NULL, NULL,0); }
-	| lp boolean_expr rp { $$ = mknode("SIMPLE_EXPRESSION", NULL, $2, 0); }
+	| ID 
+		{ $$ = mknode($1->token, NULL, NULL, 1); }
+	| '|' ID '|' 
+		{ $$ = mknode("|ID|",  NULL, NULL,0); }
+	| lp boolean_expr rp 
+		{ $$ = mknode("SIMPLE_EXPRESSION", NULL, $2, 0); }
 	| bitwise_operators  basic_expression 
 		{ $$ = mknode("bitwise_operator", $1, $2, 0); } 
 	;
@@ -294,7 +306,8 @@ integer
 parameters_list
 	: complex_expression { $$ = mknode("PARAM_LIST", $1,  NULL,0); }
 	| type complex_expression { $$ = mknode("PARAM_LIST", $1, $2, 1); }
-	| complex_expression ',' parameters_list { $$ = mknode("PARAM_LIST", $1, $3, 0); }
+	| complex_expression ',' parameters_list 
+		{ $$ = mknode("PARAM_LIST", $1, $3, 0); }
 	| type complex_expression ',' parameters_list 
 		{ $$ = mknode("PARAM_LIST", 
 				mknode("PARAM_LIST", $1, $2, 0), $4, 0); }
@@ -408,6 +421,9 @@ rp
 ID
 	: IDENTIFIER { $$ = mknode($1, NULL, NULL,1); }
 	;
+inc_dec
+	: INCR { $$ = mknode($1, NULL, NULL,1); }
+	| DECR { $$ = mknode($1, NULL, NULL,1); }
 %%
 #include "lex.yy.c"
 
