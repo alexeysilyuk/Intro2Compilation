@@ -47,16 +47,7 @@ void printTree (node* tree, int space);
 %token <string>  STRING_VALUE, CHAR_LITERAL, POINTER_ADDRESS
 %token <integer> INT_CONSTANT_VALUE
 %token <string>  BOOL_CONSTANT_VALUE, BIN_CONSTANT_VALUE, OCT_CONSTANT_VALUE, HEX_CONSTANT_VALUE
-/*
-%type <node> BOOLEAN_TYPE CHAR_TYPE INT VOID STRING  INTP CHARP
-%type <node>  IF  ELSE  WHILE  DO  FOR
-%type <node>  RETURN   _NULL  MAIN
-%type <node>  AND  DIVISION_OP  ASSIGNMENT  EQUAL  GREAT_THEN  GREAT_EQUAL  LESS_THEN
-%type <node>  LESS_EQUAL  MINUS_OP  NOT  NOT_EQUAL  OR  PLUS_OP  MULT_OP BITWISE_AND  BITWISE_XOR
-%type <node> IDENTIFIER
-%type <node>  STRING_VALUE  CHAR_LITERAL  POINTER_ADDRESS
-%type <node>  INT_CONSTANT_VALUE  BOOL_CONSTANT_VALUE  BIN_CONSTANT_VALUE  OCT_CONSTANT_VALUE  HEX_CONSTANT_VALUE
-*/
+
 %type <node> program head_declaration code_block functions line_statement declaration
 %type <node> builtin_functions loop_functions if_block else_block while_block do_while_block for_block
 %type <node> for_block_inits for_block_single_init for_block_inits_update for_block_boolean_expr boolean_expr
