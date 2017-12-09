@@ -1,4 +1,37 @@
 void main(){
+
+	int x=0;
+if (x>y) 
+	int x = 1;
+
+int goo(int x){
+	x=1;
+	y=2;
+}
+
+	int loo(int x, int y){
+		int x = 8;
+	
+	}
+	intp x = &x;
+	goo("hello");
+	boolean x = 0;
+	int x = 2+-5;
+	
+	
+
+	int st[1] = "string";
+	x = x + f;
+	x = 2+x; 
+	string a[2+3] = x; 
+	^ptr = expr; 
+
+	boolean x = (x==3)&& (x==3+3) ,y =x ;
+return;
+return ((x==3)&& (x==3)+3) ;
+return (((a+b))) ;
+
+
 int x=0;
 if (x>y) 
 	int x = 1;
@@ -18,14 +51,12 @@ boolean t=true;
 intp y[5] = 6;
 int x = 0xaf;
 
-foo(x,2);
+
+int fool(int x, int y){
+
+
+	int goo(char x)
 {
-		int x = 8;
-	}
-int foo(int x, int y){
-
-
-	{
 		int x = 8;
 	}
 	intp x = &x;

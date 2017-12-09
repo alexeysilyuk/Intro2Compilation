@@ -44,7 +44,7 @@ node* mknode (char* token, node* left, node* right, int printHeader, Type type);
 
 
 
-main : main_program {printf("Parsing done successfully. \n"); printTree($1, 0);  };
+main : main_program {printf("Parsing done successfully. \n"); runSemantic($1);  };
 
 main_program 
 	: VOID MAIN lp params_types_list rp code_block 
@@ -72,7 +72,7 @@ code_block
 
 functions
 	: builtin_functions { $$ = mknode("FUNCTION", $1, NULL, 0,UNTYPED); }
-	| user_function  { $$ = mknode("FUNCTION_DECLARATION", $1, NULL,0,UNTYPED); }
+	| user_function  { $$ = mknode("FUNCTION_DECLARATION", $1, NULL,0,$1->type); }
 	;
 
 line_statement
@@ -203,10 +203,10 @@ bool_unary_op
 user_function
 	: type ID lp rp code_block 
 		{ $$ = mknode($2->token, 
-				mknode("(USER_FUNC", $1, $2, 0,UNTYPED),  $5, 0,UNTYPED); 	}
+				mknode($2->token, $1, $2, 0,$1->type),  $5, 0,$1->type); 	}
 	| type ID lp params_types_list rp code_block 
-		{ $$ = mknode("USER_FUNC", 
-				mknode("USER_FUNC", mknode("USER_FUNC", $1, $2,0,UNTYPED), $4,0,UNTYPED), 	$6,0,UNTYPED); 
+		{ $$ = mknode($2->token, 
+				mknode($2->token, mknode($2->token, $1, $2,0,$1->type), $4,0,$1->type), 	$6,0,$1->type); 
 		}
 	
 	;
