@@ -1,33 +1,43 @@
 void main(){
+int x=0;
 if (x>y) 
-	x = x + f;
-
+	int x = 1;
 else {
-	y = x + y + z;
-
+	int tt=0;
+	y = x ;
 }
 
-for(x=1,y=1; x>0 ; x++, y--,x=x+1)
+for(x=1,y=1; x>0 ; x=x+1)
 	x=2;
 
-
-
+char a = '1';
+string b = "STRING";
 intp s = &t;
 intp s = &(10+s);
-intp t=null;
-int x[];
-intp y[5];
+boolean t=true;
+intp y[5] = 6;
+int x = 0xaf;
+
+foo(x,2);
+{
+		int x = 8;
+	}
+int foo(int x, int y){
 
 
-	if (null == null) 
-		char a='o';
-
+	{
+		int x = 8;
+	}
 	intp x = &x;
+}
+
+/*
+int foo(int x, int y){
 
 
-
-int foo(int x, int y){if (null == null) {
-
+	{
+		int x = 8;
+	}
 	intp x = &x;
 	goo("hello");
 	boolean x = 0;
@@ -35,9 +45,7 @@ int foo(int x, int y){if (null == null) {
 	return 0;
 	{
 		int x = 8;
-		{
-		int x = 8;
-		}
+		
 	}
 
 	{
@@ -52,10 +60,11 @@ int foo(int x, int y){if (null == null) {
 	boolean x = (x==3)&& (x==3+3) ,y =x ;
 return;
 return ((x==3)&& (x==3)+3) ;
-}
+return (((a+b))) ;
 }
 
-int i;
+
+
 return;
 return x;
 int x=1, y=2;
@@ -292,5 +301,5 @@ y = "foobar";
 x = &y[5]; 
 //z = ^(x - 5); 
 y = "barfoo"; 
-
+*/
 }

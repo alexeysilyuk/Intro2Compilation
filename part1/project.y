@@ -2,24 +2,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "semantic.c"
 
-typedef struct node {
+/*typedef struct node {
 	char* token;
 	struct node* left;
 	struct node* right;
 	int printHeader;
-	/* Max possible childs on for rule are 4
-	There fore in another rules simple use NULL 
-	for rest of child */
 } node;
 
-
+*/
 node* mknode (char* token, node* left, node* right, int printHeader);
 
-void printTree (node* tree, int space);
 
 
-/*#define YYSTYPE struct node**/
+
 
 %}
 
@@ -59,13 +56,13 @@ void printTree (node* tree, int space);
 
 
 
-main : main_program {printf("DONE!!! \n"); printTree($1, 0);  };
+main : main_program {printf("Parsing done successfully. \n"); printTree($1, 0);  };
 
 main_program 
 	: VOID MAIN lp params_types_list rp code_block 
-		{ $$ = mknode("VOID MAIN",mknode("(",$3,$4,0),mknode(")",$6,$5,0),1);   }
+		{ $$ = mknode("(VOID MAIN",mknode("(",$3,$4,0),mknode(")",$6,$5,0),1);   }
 	| VOID MAIN lp  rp code_block	
-		{ $$ = mknode("VOID MAIN",$3,mknode(")",$4,$5,0),1);  }
+		{ $$ = mknode("(VOID MAIN",$3,mknode(")",$4,$5,0),1);  }
 	;
 
 program
@@ -126,8 +123,10 @@ if_block
 	;
 
 else_block
-	: ELSE line_statement { $$ = mknode("(BLOCK", $2, NULL, 0); }
-	| ELSE code_block { $$ = mknode("(BLOCK", $2, NULL, 0); }
+	: ELSE line_statement 
+		{ $$ = mknode("(BLOCK", $2, NULL, 0); }
+	| ELSE code_block 
+		{ $$ = mknode("(BLOCK", $2, NULL, 0); }
 	|  { $$ = mknode("epsilon", NULL, NULL, 0); }
 	;
 
@@ -163,7 +162,8 @@ for_block_single_init
 	;
 
 for_block_inits_update
-	: ID ASSIGNMENT initializator { $$ = mknode("=", $1, $3, 1);  }
+	: ID ASSIGNMENT initializator 
+		{ $$ = mknode("=", $1, $3, 1);  }
 	| ID ASSIGNMENT initializator ',' for_block_inits_update 
 		{ $$ = mknode(", ", mknode("=", $1, $3, 1), $5, 1);  }
 	| ID inc_dec
@@ -173,8 +173,8 @@ for_block_inits_update
 	;
 
 for_block_boolean_expr
-	: boolean_expr { $$ = mknode("FOR_EXPRESION", $1,  NULL,0); }
-	| boolean_expr ',' for_block_boolean_expr { $$ = mknode("FOR_EXPRESION", $1, $3, 0); }
+	: boolean_expr { $$ = mknode("for_block_boolean_expr", $1,  NULL,0); }
+	| boolean_expr ',' for_block_boolean_expr { $$ = mknode("for_block_boolean_expr", $1, $3, 0); }
 	;
 
 
@@ -184,7 +184,7 @@ boolean_expr
 		| boolean_expr_complex { $$ = mknode("BOOLEAN_EXPR", $1, NULL, 0); }
 		| bool_unary_op boolean_expr_complex { $$ = mknode("!", NULL, $2, 1); }
 		;
-/* OP must print operator */
+
 boolean_expr_complex
 		: boolean_expr_complex bool_binary_op boolean_expr_simple 
 			{ $$ = mknode($2->token, $1, $3, 1); }
@@ -199,8 +199,8 @@ boolean_expr_simple
 		;
 
 bool_binary_op
-		: EQUAL 	{ $$ = mknode($1, NULL, NULL,1); }
-		| NOT_EQUAL 	{ $$ = mknode($1, NULL, NULL,1); }
+		: EQUAL 	{ $$ = mknode($1, NULL,  NULL,1); }
+		| NOT_EQUAL 	{ $$ = mknode($1, NULL,  NULL,1); }
 		| LESS_THEN 	{ $$ = mknode($1, NULL,  NULL,1); }
 		| LESS_EQUAL 	{ $$ = mknode($1, NULL,  NULL,1); }
 		| GREAT_THEN 	{ $$ = mknode($1, NULL,  NULL,1); }
@@ -346,18 +346,6 @@ array_size
 		{ $$ = mknode("ARRAY_SIZE", $1, NULL,0); }
 	;
 
-/*numeric_expression
-	: lp numeric_expression rp
-	| lp numeric_expression rp operator numeric_expression
-	| numeric_expression PLUS_OP numeric_expression {$$=$1+$3;}
-	| numeric_expression MINUS_OP numeric_expression {$$=$1-$3;}
-	| numeric_expression MULT_OP numeric_expression {$$=$1*$3;}
-	| numeric_expression DIVISION_OP numeric_expression {$$=$1/$3;}
-	| INT_CONSTANT_VALUE {$$=$1;}
-	; 
-*/
-
-
 
 type
 	: STRING { $$ = mknode($1, NULL, NULL, 1); }
@@ -381,21 +369,11 @@ bitwise_operators
 	| BITWISE_XOR { $$ = mknode($1, NULL, NULL, 1); }
 	;
 
-/* not done */
+
 expression
 	: /*complex_expression
 	|*/ boolean_expr { $$ = mknode("EXPRESSION", $1, NULL, 0); }
 	;
-
-/*
-builtin_function   
-	:IF    
-	|ELSE {printf("else");}   
-	|WHILE{printf("while");}   
-	|DO   {printf("do");}   
-	|FOR  {printf("for");}
-	;
-*/
 
 other
 	: RETURN { $$ = mknode($1, NULL, NULL, 1); }
@@ -418,16 +396,12 @@ inc_dec
 %%
 #include "lex.yy.c"
 
-int main(){yydebug=1; return yyparse(); }
+int main()
+	{yydebug=1; return yyparse(); }
 
 
 node* mknode(char* token, node* left, node* right, int printHeader) {
 	node* newNode = (node *) malloc (sizeof(node));
-	/*
-	char* newStr = (char *) malloc (sizeof(token)+1);  
-	strcpy(newStr, token);
-	newNode->token = newStr;
-	*/
 	newNode->token = strdup(token);
 	newNode->left = left;
 	newNode->right = right;
@@ -435,7 +409,7 @@ node* mknode(char* token, node* left, node* right, int printHeader) {
 	return newNode;
 }
 
-void printTree(node* tree, int space) {
+/*void printTree(node* tree, int space) {
 	int i;
 		if(tree->printHeader==1)
 		{	
@@ -457,4 +431,4 @@ void printTree(node* tree, int space) {
 
 		}
 	
-}
+}*/

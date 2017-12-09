@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e 
 OPT=$(getopt -n "LEx&YAcc" -o "t,v" -- "$@")
+
+
+
 eval set -- "$OPT"
 trace=0
 verbose=1

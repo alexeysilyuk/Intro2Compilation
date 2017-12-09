@@ -13,7 +13,7 @@ WHITESPACE [ \t\n\r]
 #include "y.tab.h"
 
 
-extern void yyerror(const char *);  /* prints grammar violation message */
+extern void yyerror(const char *);
 static void comment_check(void);
 
 %}
@@ -38,12 +38,8 @@ do return DO;
 while return WHILE;
 for return FOR;
 
-
 return { yylval.string = strdup(yytext); return RETURN;}
 null   { yylval.string = strdup(yytext); return _NULL;}
-
-
-
 
 true|false 		{ yylval.string = strdup(yytext); return BOOL_CONSTANT_VALUE; };
 {BIN}+"b"    		{ yylval.string = strdup(yytext); return BIN_CONSTANT_VALUE;};
@@ -92,7 +88,8 @@ true|false 		{ yylval.string = strdup(yytext); return BOOL_CONSTANT_VALUE; };
 
 
 {WHITESPACE}+				{ /* ignore spaces */ };
-.					{  printf("Unknown token "); yyerror(yytext);/* ignore bad symbols and new line */ };
+.					{  printf("Unknown token "); 
+						yyerror(yytext); /* detect unknown tokens */ };
 
 
 
@@ -106,22 +103,23 @@ int yywrap(void)
 
 void comment_check()
 {
-char c=input();
-while(c != EOF ){
+	char c=input();
+
+	while(c != EOF ){
 	
-	if(c=='*'){
-		while((c=input())=='*');
-		if(c=='/')
-			{
-			c=input();
-			return;
-		}
-	}	
+		if(c=='*'){
+			while((c=input())=='*');
+			if(c=='/')
+				{
+				c=input();
+				return;
+			}
+		}	
 
 
-	c=input();
-}
-yyerror("Comment block not closed");
+		c=input();
+	}
+	yyerror("Comment block not closed");
 }
 
 void yyerror(const char *s)

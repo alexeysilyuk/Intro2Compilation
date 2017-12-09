@@ -1,0 +1,42 @@
+#!/bin/bash
+set -e 
+OPT=$(getopt -n "LEx&YAcc" -o "t,v" -- "$@")
+
+
+
+eval set -- "$OPT"
+trace=0
+verbose=1
+while [ "$1" != "--" ]; do
+    case "$1" in
+    -t)
+            trace=1
+		echo "Trace enabled "
+            ;;
+    -v)
+            verbose=1
+		echo "Verbose enabled "
+            ;;
+ 	*)
+			echo Unknown parameter
+			exit 1
+            ;;
+    esac
+    shift
+	
+done
+
+
+lex project.l;
+
+if [ "$trace" == 1 ]; then
+	yacc  -t -d project.y
+elif [ "$verbose" == 1 ]; then
+	yacc  -v -d project.y
+else
+	yacc -d project.y
+fi
+
+
+cc -o project y.tab.c -ll -Ly;
+./project < test.t
