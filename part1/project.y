@@ -2,18 +2,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "semantic.c"
 
-/*typedef struct node {
+typedef struct node {
 	char* token;
 	struct node* left;
 	struct node* right;
 	int printHeader;
 } node;
 
-*/
-node* mknode (char* token, node* left, node* right, int printHeader);
 
+node* mknode (char* token, node* left, node* right, int printHeader);
+void printTree (node* tree, int space);
 
 
 
@@ -51,19 +50,14 @@ node* mknode (char* token, node* left, node* right, int printHeader);
 %type <node> boolean_expr_complex boolean_expr_simple bool_binary_op bool_unary_op user_function function_call
 %type <node> function_call_parameters_list  list_of_declarators declarator_initialization initializator complex_expression
 %type <node> basic_expression integer parameters_list  terminal_const_values literals declarator params_types_list
-%type <node> array_size  type operator bitwise_operators expression other ID lp rp inc_dec  main_program
+%type <node> array_size  type operator bitwise_operators expression other ID lp rp inc_dec
 %%
 
 
 
-main : main_program {printf("Parsing done successfully. \n"); printTree($1, 0);  };
+main : program {printf("Parsing done successfully. \n"); printTree($1, 0);  };
 
-main_program 
-	: VOID MAIN lp params_types_list rp code_block 
-		{ $$ = mknode("(VOID MAIN",mknode("(",$3,$4,0),mknode(")",$6,$5,0),1);   }
-	| VOID MAIN lp  rp code_block	
-		{ $$ = mknode("(VOID MAIN",$3,mknode(")",$4,$5,0),1);  }
-	;
+
 
 program
 	: head_declaration { $$ = mknode("PROGRAM", $1, NULL,0); }
@@ -221,6 +215,10 @@ user_function
 				mknode("USER_FUNC", mknode("USER_FUNC", $1, $2,0), $4,0), 
 				  	$6,0); 
 		}
+	| VOID MAIN lp params_types_list rp code_block 
+		{ $$ = mknode("(VOID MAIN",mknode("(",$3,$4,0),mknode(")",$6,$5,0),1);   }
+	| VOID MAIN lp  rp code_block	
+		{ $$ = mknode("(VOID MAIN",$3,mknode(")",$4,$5,0),1);  }
 	
 	;
 
@@ -409,7 +407,7 @@ node* mknode(char* token, node* left, node* right, int printHeader) {
 	return newNode;
 }
 
-/*void printTree(node* tree, int space) {
+void printTree(node* tree, int space) {
 	int i;
 		if(tree->printHeader==1)
 		{	
@@ -431,4 +429,4 @@ node* mknode(char* token, node* left, node* right, int printHeader) {
 
 		}
 	
-}*/
+}

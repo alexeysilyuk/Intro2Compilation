@@ -1,4 +1,4 @@
-void main(){
+int foo(){
 if (x>y) 
 	x = x + f;
 else {
@@ -14,7 +14,7 @@ intp s = &t;
 intp s = &(10+s);
 boolean t=null;
 intp y[5];
-
+}
 int foo(int x, int y){
 
 
@@ -285,4 +285,4 @@ x = &y[5];
 //z = ^(x - 5); 
 y = "barfoo"; 
 
-}
+
