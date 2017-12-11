@@ -1,6 +1,6 @@
 int foo(){
 if (x>y) 
-	x = x + f;
+	int x = 8;
 else {
 	y = x ;
 
@@ -14,6 +14,14 @@ intp s = &t;
 intp s = &(10+s);
 boolean t=null;
 intp y[5];
+
+int f(){
+//.....
+y = 7;
+}
+/*
+int x = f();
+
 }
 int foo(int x, int y){
 
@@ -285,4 +293,5 @@ x = &y[5];
 //z = ^(x - 5); 
 y = "barfoo"; 
 
-
+*/
+}

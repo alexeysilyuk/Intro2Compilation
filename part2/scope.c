@@ -41,10 +41,22 @@ Scope* createScope(char* name, Type returnType, Scope* upperScope, Bool isFuncti
 
 Scope* prependScope(char* name, Type returnType, Scope* upperScope, Bool isFunction )
 {
-    printf("prepend func %s\n",name);
+    printf("PUSH %s : %d\n",name,returnType);
     Scope* scope = createScope(name,returnType,upperScope,isFunction);
     upperScope = scope;
     return upperScope;
 }
  
-
+Scope* popScope(Scope* head)
+{
+    if(strcmp(head->name,"GLOBAL")==0)
+        {
+            printf("FINISH\n");
+            exit(0);
+        }
+    else
+        {
+            printf("POP %s\n",head->name);
+            return head->upperScope;
+        }
+}

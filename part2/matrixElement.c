@@ -40,6 +40,7 @@ matrixElement* createMatrixElement(char* name, Type type, char* value,Bool isFun
 
 matrixElement* prependMatrixElement(matrixElement* head,char* name, Type type, char* value,Bool isFunc, Type* paramList)
 {
+    printf("\tName: %s, val: %s\n",name,value);
     matrixElement* new_node = createMatrixElement(name,type,value,isFunc,paramList,head);
     head = new_node;
     return head;

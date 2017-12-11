@@ -39,19 +39,13 @@ node* mknode (char* token, node* left, node* right, int printHeader, Type type);
 %type <node> boolean_expr_complex boolean_expr_simple bool_binary_op bool_unary_op user_function function_call
 %type <node> function_call_parameters_list  list_of_declarators declarator_initialization initializator complex_expression
 %type <node> basic_expression integer parameters_list  terminal_const_values literals declarator params_types_list
-%type <node> array_size  type operator bitwise_operators expression other ID lp rp inc_dec  main_program
+%type <node> array_size  type operator bitwise_operators expression other ID lp rp inc_dec 
 %%
 
 
 
-main : main_program {printf("Parsing done successfully. \n"); runSemantic($1);  };
+main : program {printf("Parsing done successfully. \n"); runSemantic($1);  };
 
-main_program 
-	: VOID MAIN lp params_types_list rp code_block 
-		{ $$ = mknode("(VOID MAIN",mknode("(",$3,$4,0,UNTYPED),mknode(")",$6,$5,0,UNTYPED),1,UNTYPED);   }
-	| VOID MAIN lp  rp code_block	
-		{ $$ = mknode("(VOID MAIN",$3,mknode(")",$4,$5,0,UNTYPED),1,UNTYPED);  }
-	;
 
 program
 	: head_declaration { $$ = mknode("PROGRAM", $1, NULL,0,UNTYPED); }
@@ -60,29 +54,28 @@ program
 
 
 head_declaration
-	: code_block { $$ = mknode("HEAD", $1, NULL, 0,UNTYPED); }
-	| functions  { $$ = mknode("HEAD", $1, NULL, 0,UNTYPED); }
-	| line_statement  { $$ = mknode("HEAD", $1, NULL, 0,UNTYPED); }
+	: code_block { $$ = mknode("BLOCK", $1, NULL, 0,UNTYPED); }
+	| functions  { $$ = mknode("FUNCTION_DECLARATION", $1, NULL, 0,UNTYPED); }
+	| line_statement  { $$ = mknode("LINE_STATEMENT", $1, NULL, 0,UNTYPED); }
 	;
 
 code_block
-	: '{' program '}' { $$ = mknode("(BLOCK", $2, mknode(")", NULL, NULL, 1,UNTYPED), 1,UNTYPED); }
-	| '{' '}' { $$ = mknode("(BLOCK", NULL, NULL, 1,UNTYPED); }
+	: '{' program '}' { $$ = mknode("_", $2, mknode("}", NULL, NULL, 1,UNTYPED), 1,UNTYPED); }
+	| '{' '}' { $$ = mknode("(BLOCK", NULL, mknode("}", NULL, NULL, 1,UNTYPED), 1,UNTYPED); }
 	;
 
 functions
-	: builtin_functions { $$ = mknode("FUNCTION", $1, NULL, 0,UNTYPED); }
-	| user_function  { $$ = mknode("FUNCTION_DECLARATION", $1, NULL,0,$1->type); }
+	: builtin_functions { $$ = mknode("BUILTIN_FUNCTIONS", $1, NULL, 0,UNTYPED); }
+	| user_function  { $$ = mknode("USER_FUNCTION", $1, NULL,0,$1->type); }
 	;
 
 line_statement
-	: declaration { $$ = mknode("LINE_STATEMENT", $1, NULL, 0,UNTYPED); }  
-	| declarator_initialization ';' { $$ = mknode("LINE_STATEMENT", $1, NULL,0,UNTYPED); }  
+	: declaration { $$ = mknode("DECLARATION", $1, NULL, 0,UNTYPED); }  
+	| declarator_initialization ';' { $$ = mknode("DECLARATION_INIT", $1, NULL,0,UNTYPED); }  
 	| RETURN ';' { $$ = mknode("return", NULL, NULL,1,UNTYPED); } 
 	| RETURN expression ';' { $$ = mknode("return", $2, NULL, 1,UNTYPED); }  
 	| function_call ';' { $$ = mknode("LINE_STATEMENT", $1, NULL,0,UNTYPED); }
 	;
-
 
 
 declaration
@@ -104,27 +97,27 @@ loop_functions
 if_block
 	: IF lp boolean_expr rp line_statement  else_block 
 		{ $$ = mknode("(IF", mknode("(", $2, $3, 0,UNTYPED), mknode(")", 
-			mknode("(BLOCK",$5,mknode(")",NULL,NULL,1,UNTYPED),1,UNTYPED)		
+			mknode("(BLOCK",$5,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED)		
 			, $6, 1,UNTYPED), 1,UNTYPED); }
 	| IF lp boolean_expr rp code_block else_block	
-		{ $$ = mknode("(IF", mknode("(", $2, $3, 0,UNTYPED), mknode(")", $5, $6, 1,UNTYPED), 1,UNTYPED); }
+		{ $$ = mknode("(IF", mknode("(", $2, $3, 0,UNTYPED), mknode("_", $5, $6, 1,UNTYPED), 1,UNTYPED); }
 	;
 
 else_block
 	: ELSE line_statement 
-		{ $$ = mknode("(BLOCK", $2, NULL, 0,UNTYPED); }
+		{ $$ = mknode("BLOCK", $2, mknode("}", NULL, NULL, 0,UNTYPED), 0,UNTYPED); }
 	| ELSE code_block 
-		{ $$ = mknode("(BLOCK", $2, NULL, 0,UNTYPED); }
+		{ $$ = mknode("BLOCK", $2, NULL, 0,UNTYPED); }
 	|  { $$ = mknode("epsilon", NULL, NULL, 0,UNTYPED); }
 	;
 
 while_block
-	: WHILE lp boolean_expr rp line_statement { $$ = mknode("(WHILE", $3, $5, 1,UNTYPED); }
+	: WHILE lp boolean_expr rp line_statement { $$ = mknode("(WHILE", $3, mknode(" ",$5,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED), 1,UNTYPED); }
 	| WHILE lp boolean_expr rp code_block { $$ = mknode("WHILE", $3, $5, 1,UNTYPED); }
 	;
 
 do_while_block
-	: DO line_statement  WHILE lp boolean_expr rp ';' { $$ = mknode("(DO_WHILE", $2, $5, 0,UNTYPED); }
+	: DO line_statement  WHILE lp boolean_expr rp ';' { $$ = mknode("(DO_WHILE", mknode(" ",$2,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED), $5, 0,UNTYPED); }
 	| DO code_block  WHILE lp boolean_expr rp ';' { $$ = mknode("(DO_WHILE", $2, $5, 0,UNTYPED); }
 	;
 
@@ -133,7 +126,7 @@ for_block
 line_statement 
 	{ $$ = mknode("FOR", 
 		mknode("FOR", mknode("FOR", $3, $5, 0,UNTYPED), $7, 0,UNTYPED), 
-			    $9, 0,UNTYPED); 
+			    mknode(" ",$9,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED), 0,UNTYPED); 
 	}
 	| FOR lp for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update rp code_block 		{ $$ = mknode("FOR", 
 		mknode("FOR", mknode("FOR", $3, $5, 0,UNTYPED), $7, 0,UNTYPED), 
@@ -208,7 +201,10 @@ user_function
 		{ $$ = mknode($2->token, 
 				mknode($2->token, mknode($2->token, $1, $2,0,$1->type), $4,0,$1->type), 	$6,0,$1->type); 
 		}
-	
+	|VOID MAIN lp params_types_list rp code_block 
+		{ $$ = mknode("(VOID MAIN",mknode("(",$3,$4,0,UNTYPED),mknode(")",$6,$5,0,UNTYPED),1,UNTYPED);   }
+	| VOID MAIN lp  rp code_block	
+		{ $$ = mknode("(VOID MAIN",$3,mknode(")",$4,$5,0,UNTYPED),1,UNTYPED);  }
 	;
 
 

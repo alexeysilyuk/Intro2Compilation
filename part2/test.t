@@ -1,18 +1,18 @@
 void main(){
+int x = 1;
+	int boo(){
+		int x = 1;
+		{
 
-	int x=0;
-if (x>y) 
-	int x = 1;
-
-int goo(int x){
-	x=1;
-	y=2;
+			
+		}
+	}
 }
 
-	int loo(int x, int y){
-		int x = 8;
-	
-	}
+int foo(){
+	//int x = 1;
+}
+/*
 	intp x = &x;
 	goo("hello");
 	boolean x = 0;
@@ -62,7 +62,7 @@ int fool(int x, int y){
 	intp x = &x;
 }
 
-/*
+
 int foo(int x, int y){
 
 
@@ -333,4 +333,4 @@ x = &y[5];
 //z = ^(x - 5); 
 y = "barfoo"; 
 */
-}
+

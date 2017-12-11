@@ -22,7 +22,7 @@ Scope* globalScope ;
 
 void runSemantic(node* tree){
 	//printTree(tree,0);
-	globalScope= createScope("Main",-1,NULL,TRUE);
+	globalScope= createScope("GLOBAL",UNTYPED,NULL,FALSE);
 	globalScope= createScopes(tree,globalScope);
 
 
@@ -33,10 +33,21 @@ Scope* createScopes(node *tree,Scope * globalScope){
 
 	int space=0;
 	if(strcmp("FUNCTION_DECLARATION",tree->token)==0)
-		globalScope = prependScope(tree->left->token,tree->type,globalScope,TRUE);
+		globalScope = prependScope(tree->left->left->token,tree->left->type,globalScope,TRUE);
 				
-	if(strcmp("(BLOCK",tree->token)==0)
-		globalScope = prependScope("BLOCK",UNTYPED,globalScope,FALSE);
+	if(strcmp("BLOCK",tree->token)==0)
+		globalScope = prependScope("(BLOCK",UNTYPED,globalScope,FALSE);
+
+
+	if(strcmp("DECLARATION",tree->token)==0)	
+		{
+			prependMatrixElement(globalScope->matrix,"Line statement",tree->left->type,"-",FALSE,NULL);
+		}
+
+
+	if(strcmp("}",tree->token)==0)
+		popScope(globalScope);
+
 
 	if (tree->left) 
 		createScopes(tree->left,globalScope);
