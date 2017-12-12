@@ -11,3 +11,4 @@ part2/.idea/*
 part2/.vscode/*
 part2/cmake-build-debug/*
 part2/CMakeLists.txt
+part2/.idea/vcs.xml
