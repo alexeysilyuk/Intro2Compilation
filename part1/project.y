@@ -72,7 +72,7 @@ head_declaration
 	;
 
 code_block
-	: '{' program '}' { $$ = mknode("(BLOCK", $2, mknode(")", NULL, NULL, 1), 1); }
+	: '{' program '}' { $$ = mknode("(BLOCK", $2, mknode(")\n", NULL, NULL, 1), 1); }
 	| '{' '}' { $$ = mknode("(BLOCK", NULL, NULL, 1); }
 	;
 
@@ -207,19 +207,19 @@ bool_unary_op
 
 
 user_function
-	: type ID lp rp code_block 
+	: ID type lp rp code_block 
 		{ $$ = mknode($2->token, 
 				mknode("(USER_FUNC", $1, $2, 0),  $5, 0); 	}
-	| type ID lp params_types_list rp code_block 
+	| ID type lp params_types_list rp code_block 
 		{ $$ = mknode("USER_FUNC", 
 				mknode("USER_FUNC", mknode("USER_FUNC", $1, $2,0), $4,0), 
 				  	$6,0); 
 		}
-	| VOID MAIN lp params_types_list rp code_block 
+	/*| VOID MAIN lp params_types_list rp code_block 
 		{ $$ = mknode("(VOID MAIN",mknode("(",$3,$4,0),mknode(")",$6,$5,0),1);   }
 	| VOID MAIN lp  rp code_block	
 		{ $$ = mknode("(VOID MAIN",$3,mknode(")",$4,$5,0),1);  }
-	
+	*/
 	;
 
 
@@ -352,6 +352,7 @@ type
 	| INT { $$ = mknode($1, NULL, NULL, 1); }
 	| INTP { $$ = mknode($1, NULL, NULL, 1); }
 	| CHARP { $$ = mknode($1, NULL, NULL, 1); }
+	| VOID { $$ = mknode($1, NULL, NULL, 1); }
 	;
 
 
@@ -387,6 +388,7 @@ rp
 
 ID
 	: IDENTIFIER { $$ = mknode($1, NULL, NULL,1); }
+	| MAIN	{ $$ = mknode($1, NULL, NULL,1); }
 	;
 inc_dec
 	: INCR { $$ = mknode($1, NULL, NULL,1); }
@@ -411,16 +413,19 @@ void printTree(node* tree, int space) {
 	int i;
 		if(tree->printHeader==1)
 		{	
-			for (i= 0; i< space; i++) 
-				{ printf("   "); }
-			printf("%s\n", tree->token);
 			space++;
 			
 			if (tree->left) 
 				{   printTree(tree->left, space);  }
+
+
 			if (tree->right)
 				{   printTree(tree->right, space);}
-			
+
+			for (i= 0; i< space; i++) 
+				{ printf("   "); }
+			printf("%s\n", tree->token);
+			//space++;
 			
 		}
 		else{

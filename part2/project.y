@@ -70,17 +70,17 @@ functions
 	;
 
 line_statement
-	: declaration { $$ = mknode("DECLARATION", $1, NULL, 0,UNTYPED); }  
+	: declaration { $$ = mknode("DECLARATION", $1, NULL, 0,$1->type); }  
 	| declarator_initialization ';' { $$ = mknode("DECLARATION_INIT", $1, NULL,0,UNTYPED); }  
 	| RETURN ';' { $$ = mknode("return", NULL, NULL,1,UNTYPED); } 
 	| RETURN expression ';' { $$ = mknode("return", $2, NULL, 1,UNTYPED); }  
-	| function_call ';' { $$ = mknode("LINE_STATEMENT", $1, NULL,0,UNTYPED); }
+	| function_call ';' { $$ = mknode("function_call", $1, NULL,0,UNTYPED); }
 	;
 
 
 declaration
 	: type list_of_declarators ';' 
-		{$$ = mknode("(", $1, mknode(")",$2,mknode(")",NULL,NULL,1,UNTYPED),0,UNTYPED), 1,UNTYPED); }
+		{$$ = mknode("RECURSIVE_DECLARATION", $1, $2, 0, $1->type); }
 	;
 
 builtin_functions
@@ -175,7 +175,7 @@ boolean_expr_complex
 
 
 boolean_expr_simple
-		: complex_expression { $$ = mknode("BOOLEAN_EXPR_SIMPLE", $1, NULL,0,UNTYPED); }
+		: complex_expression { $$ = mknode("BOOLEAN_EXPR_COMPLEX", $1, NULL,0,UNTYPED); }
 		| other  { $$ = mknode("BOOLEAN_EXPR_SIMPLE", $1, NULL,0,UNTYPED); }
 		;
 
@@ -201,10 +201,10 @@ user_function
 		{ $$ = mknode($2->token, 
 				mknode($2->token, mknode($2->token, $1, $2,0,$1->type), $4,0,$1->type), 	$6,0,$1->type); 
 		}
-	|VOID MAIN lp params_types_list rp code_block 
+	/*|VOID MAIN lp params_types_list rp code_block 
 		{ $$ = mknode("(VOID MAIN",mknode("(",$3,$4,0,UNTYPED),mknode(")",$6,$5,0,UNTYPED),1,UNTYPED);   }
 	| VOID MAIN lp  rp code_block	
-		{ $$ = mknode("(VOID MAIN",$3,mknode(")",$4,$5,0,UNTYPED),1,UNTYPED);  }
+		{ $$ = mknode("(VOID MAIN",$3,mknode(")",$4,$5,0,UNTYPED),1,UNTYPED);  }*/
 	;
 
 
@@ -225,28 +225,28 @@ function_call_parameters_list
 
 list_of_declarators
 	: declarator_initialization 
-		{ $$ = mknode("LIST_DECL", $1, NULL, 0,UNTYPED); }
-	| list_of_declarators ',' declarator_initialization 
-		{ $$ = mknode("LIST_DECL", $1, $3, 0,UNTYPED); }
+		{ $$ = mknode("DECLARATION_INIT", $1, NULL, 0,$1->type); }
+	| declarator_initialization ',' list_of_declarators 
+		{ $$ = mknode($1->token, $1, $3, 0,$1->type); }
 	;
 
 declarator_initialization
 	: declarator ASSIGNMENT initializator 
-		{ $$ = mknode("=", $1, $3, 1,UNTYPED); }
+		{ $$ = mknode("=", $1, $3, 1,$3->type); }
 	| declarator 
-		{ $$ = mknode("DECL_INIT", $1, NULL, 0,UNTYPED); }
+		{ $$ = mknode("DECL", $1, NULL, 0,UNTYPED); }
 	;
 
 
 initializator
-	: expression { $$ = mknode("INIT", $1, NULL,0,UNTYPED); }
+	: expression { $$ = mknode("INIT", $1, NULL,0,$1->type); }
 	;
 
 
 
 complex_expression
 	: basic_expression 
-		{ $$ = mknode("EXPRESSION", $1,  NULL,0,UNTYPED); }
+		{ $$ = mknode($1->token, $1,  NULL,0,UNTYPED); }
 	| basic_expression operator complex_expression 
 		{ $$ = mknode($2->token, $1, $3, 1,UNTYPED); }
 	| operator complex_expression 
@@ -256,17 +256,17 @@ complex_expression
 
 basic_expression
 	: function_call 
-		{ $$ = mknode("SIMPLE_EXPRESSION", $1,  NULL,0,UNTYPED); }
-	| terminal_const_values 
-		{ $$ = mknode($1->token, $1, NULL,0,UNTYPED); }
+		{ $$ = mknode("function_call", $1,  NULL,0,UNTYPED); }
+	| terminal_const_values
+		{ $$ = mknode($1->token, $1, NULL,0,$1->type); }
 	| ID '[' integer ']' 
-		{ $$ = mknode($1->token, mknode("[",mknode($3->token,NULL,NULL,1,UNTYPED),NULL,1,UNTYPED),
+		{ $$ = mknode("ID[]", mknode($1->token,NULL,mknode("[",mknode($3->token,NULL,NULL,1,UNTYPED),NULL,1,UNTYPED),0,UNTYPED),
 			mknode("]",NULL,NULL,1,UNTYPED),1,UNTYPED);
-		 }
+		 } 
 	| ID 
-		{ $$ = mknode($1->token, NULL, NULL, 1,UNTYPED); }
+		{ $$ = mknode("ID", $1, NULL, 1,UNTYPED); }
 	| '|' ID '|' 
-		{ $$ = mknode("|ID|",  NULL, NULL,0,UNTYPED); }
+		{ $$ = mknode("|ID|", $2, NULL,0,UNTYPED); }
 	| lp boolean_expr rp 
 		{ $$ = mknode("SIMPLE_EXPRESSION", NULL, $2, 0,UNTYPED); }
 	| bitwise_operators  basic_expression 
@@ -337,6 +337,7 @@ type
 	| INT { $$ = mknode($1, NULL, NULL, 1,INT_TYPE); }
 	| INTP { $$ = mknode($1, NULL, NULL, 1,INTP_TYPE);}
 	| CHARP { $$ = mknode($1, NULL, NULL, 1,CHARP_TYPE); }
+	| VOID { $$ = mknode($1, NULL, NULL, 1,VOID_TYPE); }
 	;
 
 
@@ -355,7 +356,7 @@ bitwise_operators
 
 expression
 	: /*complex_expression
-	|*/ boolean_expr { $$ = mknode("EXPRESSION", $1, NULL, 0,UNTYPED);  }
+	|*/ boolean_expr { $$ = mknode("EXPRESSION", $1, NULL, 0,$1->type);  }
 	;
 
 other
@@ -372,6 +373,7 @@ rp
 
 ID
 	: IDENTIFIER { $$ = mknode($1, NULL, NULL,1,UNTYPED); }
+	| MAIN	{ $$ = mknode($1, NULL, NULL,1,UNTYPED); }
 	;
 inc_dec
 	: INCR { $$ = mknode($1, NULL, NULL,1,UNTYPED); }

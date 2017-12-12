@@ -60,3 +60,36 @@ Scope* popScope(Scope* head)
             return head->upperScope;
         }
 }
+
+
+Bool isFuncDeclaredInScope(char* funcName, Scope* currentScope)
+{
+	while(currentScope)
+	{
+		if(isFuncInMatrix(funcName,currentScope->matrix)== TRUE)
+				return TRUE;
+		else
+			currentScope=currentScope->upperScope;	
+
+	}
+	return FALSE;
+	
+}
+
+
+Bool isVariableDeclaredInScope(char* varName, Scope* currentScope)
+{
+	while(currentScope)
+	{
+		if(isVariableInMatrix(varName,currentScope->matrix)== TRUE)
+				return TRUE;
+		else
+			currentScope=currentScope->upperScope;	
+
+	}
+	return FALSE;
+
+
+
+	
+}

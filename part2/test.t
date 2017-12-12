@@ -1,18 +1,20 @@
-void main(){
-int x = 1;
-	int boo(){
-		int x = 1;
-		{
 
-			
-		}
-	}
+void main(){
+int x = 3+(5-7)/10;
+	
 }
 
+// int y[1] = x[2];
+// int str = |x|;
+
+
+
+
+/*
 int foo(){
 	//int x = 1;
 }
-/*
+
 	intp x = &x;
 	goo("hello");
 	boolean x = 0;
