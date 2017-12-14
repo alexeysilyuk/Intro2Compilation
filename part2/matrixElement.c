@@ -3,8 +3,12 @@
 #include <stdlib.h>
 
 
-typedef enum type {UNTYPED=-1,BOOLEAN_TYPE=0, CHAR_TYPE=1, INT_TYPE=2, STRING_TYPE=3, CHARP_TYPE=4, INTP_TYPE=5, BIN_TYPE=6,OCT_TYPE=7,HEX_TYPE=8, VOID_TYPE=9 } Type;
-
+typedef enum type {ERROR=-2, UNTYPED=-1,BOOLEAN_TYPE=0, CHAR_TYPE=1, INT_TYPE=2, STRING_TYPE=3, CHARP_TYPE=4, INTP_TYPE=5, BIN_TYPE=6,OCT_TYPE=7,HEX_TYPE=8, VOID_TYPE=9, ID_TYPE=10 } Type;
+typedef enum error_codes {USING_UNDECLARED_VARIABLE,INCOMPATIBLE_TYPES,USING_UNDECLARED_FUNCTION} error_codes;
+char* symantic_error = "Symantic Error";
+char* error_text[] ={"Using undeclared variable",
+              "Incompatible types", "Using undeclared function"
+};
 
 typedef enum bool{FALSE,TRUE} Bool;
 typedef struct matrixElement
@@ -86,5 +90,27 @@ Bool isVariableInMatrix(char* name, matrixElement* head){
         return FALSE;
 }
 
+Type getVarTypeMatrix(char* name, matrixElement* head){
+    matrixElement *current = head;
+    while(current)
+    {
+        if(strcmp(name,current->name)==0 && current->isFunc==FALSE)
+            return current->type;
+        else
+            current = current->next;
+    }
+    return UNTYPED;
+}
 
+Type getFuncTypeMatrix(char* name, matrixElement* head){
+    matrixElement *current = head;
+    while(current)
+    {
+        if(strcmp(name,current->name)==0 && current->isFunc==TRUE)
+            return current->type;
+        else
+            current = current->next;
+    }
+    return UNTYPED;
+}
 

@@ -15,9 +15,10 @@ typedef struct node {
 void printTree(node* tree, int space);
 Scope* createScopes(node *tree,Scope * globalScope);
 void updateNodesNype(node* tree);
-Bool isFuncDeclared(char* funcName, Scope* currentScope);
+Bool isFuncDeclaredInScope(char* funcName, Scope* currentScope);
 void addVarsToMatrix(node* tree, Scope* scope,Type type);
-void error(char* msg);
+Type checkType(node* tree);
+void complexExprTyping(node* tree, int space, Scope* scope);
 
 Scope* globalScope ;
 
@@ -51,29 +52,26 @@ Scope* createScopes(node *tree,Scope * globalScope){
 		{
 			node *subTree = tree;
 			addVarsToMatrix(subTree,globalScope,subTree->type);
+            if(strcmp("COMPLEX_EXPR",tree->token)==0)
+            {
+                complexExprTyping(tree,0,globalScope);
+            }
 		}
 
 
-	if(strcmp("function_call",tree->token)==0)	
-		{
-			if(isFuncDeclaredInScope(tree->left->token,globalScope)==TRUE)
-				printf("%s is declared\n",tree->left->token);
-			else
-				printf("%s is NOT declared\n",tree->left->token);
-		}
-	if(strcmp("EXPRESSION",tree->token))
-	{
-		node* subTree=tree;
-		printTree(subTree,0);
-	}
-	/*if(strcmp("BOOLEAN_EXPR_COMPLEX",tree->token)==0) || strcmp("|ID|",tree->left->token)==0 || strcmp("ID[]",tree->left->token)==0)	
-		{
-			if(isVariableDeclaredInScope(tree->left->token,globalScope)==TRUE)
-				printf("%s is declared\n",tree->left->token);
-			else
-				printf("%s is NOT declared\n",tree->left->token);
-		}
-	*/
+//	if(strcmp("function_call",tree->token)==0)
+//		{
+//			if(isFuncDeclaredInScope(tree->left->token,globalScope)==TRUE)
+//				printf("%s is declared\n",tree->left->token);
+//			else
+//				printf("%s is NOT declared\n",tree->left->token);
+//		}
+
+    if(strcmp("COMPLEX_EXPR",tree->token)==0)
+    {
+        complexExprTyping(tree,0,globalScope);
+    }
+
 
 	if(strcmp("}",tree->token)==0)
 		{
@@ -135,32 +133,77 @@ void updateNodesNype(node* tree)
 */
 void addVarsToMatrix(node* tree,  Scope* scope, Type type) {
 
-			if(strcmp(tree->token,"ID")==0)
-				{
-				//printf("\tID:%s\n", tree->left->token);
-				if(isVariableInMatrix(tree->left->token,scope->matrix)==FALSE)
-					scope->matrix = prependMatrixElement(scope->matrix,tree->left->token,type,"-",FALSE,NULL);
-				else
-					printf("Variable %s is already exists\n",tree->left->token);
 
+    if(strcmp(tree->token,"ID")==0)
+    {
+        if(isVariableDeclaredInScope(tree->left->token,scope)==FALSE)
+            scope->matrix = prependMatrixElement(scope->matrix,tree->left->token,type,"-",FALSE,NULL);
+        else
+            printf("Variable %s is already exists\n",tree->left->token);
 			}
 
-	/*if(strcmp("=",tree->token)==0){
-		char* variable = tree->left->token;
+    if (tree->left)
+				   addVarsToMatrix(tree->left,scope,type);
+    if (tree->right)
+				  addVarsToMatrix(tree->right,scope,type);
 
-
-	}*/
-
-			if (tree->left) 
-				{   addVarsToMatrix(tree->left,scope,type);  }
-			if (tree->right)
-				{   addVarsToMatrix(tree->right,scope,type);}
-			
-			
-	
 	}
 
-void error(char* msg){
-	printf("\nERROR : %s! exiting...\n\n",msg);
-	exit(1);
+
+void complexExprTyping(node* tree, int space, Scope* scope) {
+    int i;
+    if (tree->right)
+        complexExprTyping(tree->right, space,scope);
+
+    if (tree->left)
+        complexExprTyping(tree->left, space,scope);
+
+
+    if(tree->type == ID_TYPE) {
+        Type type;
+        if (isVariableDeclaredInScope(tree->token, scope) == TRUE) {
+            type = getVarTypeScope(tree->token, scope);
+            tree->type = type;
+        } else if (isFuncDeclaredInScope(tree->left->token, scope) == TRUE) {
+            printf("FUNC: %s\n", tree->left->token);
+            Type type = getFuncTypeScope(tree->left->token, scope);
+            //tree->left->type = type;
+            tree->type = type;
+        } else {
+            printf("%s : %s\n", symantic_error, error_text[USING_UNDECLARED_FUNCTION]);
+            exit(USING_UNDECLARED_FUNCTION);
+        }
+
+    }
+    tree->type = checkType(tree);
+   // printf("%s:%d\n", tree->token,tree->type);
+
+}
+
+
+
+
+
+Type checkType(node* tree){
+
+    if(tree->left&&tree->right)
+    {
+        if(tree->left->type== INT_TYPE && tree->right->type == INT_TYPE && tree->type == INT_TYPE)
+            return INT_TYPE;
+        if (tree->left->type== BOOLEAN_TYPE && tree->right->type == BOOLEAN_TYPE && tree->type == BOOLEAN_TYPE)
+            return BOOLEAN_TYPE;
+
+        else
+        {
+            printf("%s : %s!\n",symantic_error,error_text[INCOMPATIBLE_TYPES]);
+            exit(INCOMPATIBLE_TYPES);
+        }
+    }
+
+    if(tree->left)
+        return tree->left->type;
+
+
+    return tree->type;
+
 }

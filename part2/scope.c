@@ -84,12 +84,51 @@ Bool isVariableDeclaredInScope(char* varName, Scope* currentScope)
 		if(isVariableInMatrix(varName,currentScope->matrix)== TRUE)
 				return TRUE;
 		else
-			currentScope=currentScope->upperScope;	
+			currentScope=currentScope->upperScope;
 
 	}
 	return FALSE;
 
+}
 
 
-	
+Type getVarTypeScope(char* varName, Scope* currentScope)
+{
+    Type type=UNTYPED;
+    while(currentScope)
+    {
+        type = getVarTypeMatrix(varName,currentScope->matrix);
+        if(type!=UNTYPED)
+            return type;
+        else
+            currentScope=currentScope->upperScope;
+
+    }
+    return type;
+}
+
+Type getFuncTypeScope(char* varName, Scope* currentScope)
+{
+    Type type=UNTYPED;
+    while(currentScope)
+    {
+        type = getFuncTypeMatrix(varName,currentScope->matrix);
+        if(type!=UNTYPED)
+            return type;
+        else
+            currentScope=currentScope->upperScope;
+
+    }
+    return type;
+}
+
+
+void printScope(Scope* head)
+{
+    while(head){
+        printf("Scope : %s, Type : %d, Func : %d\n",head->name,head->returnType, head->isFunction);
+        if(head->matrix)
+            printMatrix(head->matrix);
+        head= head->upperScope;
+    }
 }

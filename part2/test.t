@@ -1,6 +1,18 @@
-
+char sqrt() {
+	int u=7;
+	return u;
+}
 void main(){
-int x = 3+(5-7)/10;
+
+
+	int doo(){
+int x;
+		int y = x;
+
+	}
+
+
+
 	
 }
 
