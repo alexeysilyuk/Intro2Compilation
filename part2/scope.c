@@ -13,11 +13,12 @@ typedef struct Scope
     Bool isFunction;
     struct Scope* upperScope;
     matrixElement* matrix;
+    //paramElem* scopeParamsList;
 
 } Scope;
 
 
-Scope* createScope(char* name, Type returnType, Scope* upperScope, Bool isFunction)
+Scope* createScope(char* name, Type returnType, Scope* upperScope, Bool isFunction/*,paramElem * paramList*/)
 {
     Scope* newScope = (Scope*)malloc(sizeof(Scope));
     if(newScope == NULL)
@@ -32,6 +33,7 @@ Scope* createScope(char* name, Type returnType, Scope* upperScope, Bool isFuncti
     newScope->matrix = matrixHead;
     newScope->returnType=returnType;
     newScope->isFunction = isFunction;
+    //newScope->scopeParamsList=paramList;
 
     newScope->upperScope=upperScope;
 
@@ -39,9 +41,9 @@ Scope* createScope(char* name, Type returnType, Scope* upperScope, Bool isFuncti
 }
 
 
-Scope* prependScope(char* name, Type returnType, Scope* upperScope, Bool isFunction )
+Scope* prependScope(char* name, Type returnType, Scope* upperScope, Bool isFunction)
 {
-    printf("PUSH %s : %d\n",name,returnType);
+    //printf("PUSH %s : %d\n",name,returnType);
     Scope* scope = createScope(name,returnType,upperScope,isFunction);
     upperScope = scope;
     return upperScope;
@@ -56,7 +58,7 @@ Scope* popScope(Scope* head)
         }
     else
         {
-            printf("POP %s\n",head->name);
+            //printf("POP %s\n",head->name);
             return head->upperScope;
         }
 }
@@ -84,7 +86,8 @@ Bool isVariableDeclaredInScope(char* varName, Scope* currentScope)
 		if(isVariableInMatrix(varName,currentScope->matrix)== TRUE)
 				return TRUE;
 		else
-			currentScope=currentScope->upperScope;
+            currentScope=currentScope->upperScope;
+
 
 	}
 	return FALSE;
@@ -125,10 +128,14 @@ Type getFuncTypeScope(char* varName, Scope* currentScope)
 
 void printScope(Scope* head)
 {
-    while(head){
+    if(head){
         printf("Scope : %s, Type : %d, Func : %d\n",head->name,head->returnType, head->isFunction);
         if(head->matrix)
+        {
+            printf("%s matrix :\n",head->name);
             printMatrix(head->matrix);
+        }
         head= head->upperScope;
+
     }
 }

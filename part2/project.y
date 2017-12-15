@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-//#include "semantic.c"
-#include "test.c"
+#include "semantic.c"
+
 
 node* mknode (char* token, node* left, node* right, int printHeader, Type type);
 
@@ -69,6 +69,21 @@ functions
 	: builtin_functions { $$ = mknode("BUILTIN_FUNCTIONS", $1, NULL, 0,UNTYPED); }
 	| user_function  { $$ = mknode("USER_FUNCTION", $1, NULL,0,$1->type); }
 	;
+
+user_function
+		: type ID lp rp code_block
+{ $$ = mknode($2->token,
+			  mknode($2->token, $1, $2, 0,$1->type),  $5, 0,$1->type); 	}
+| type ID lp params_types_list rp code_block
+{ $$ = mknode($2->token, mknode("params_types_list", mknode($2->token, $1, $2,0,$1->type), $4,0,$1->type), 	$6,0,$1->type);
+}
+/*|VOID MAIN lp params_types_list rp code_block
+    { $$ = mknode("(VOID MAIN",mknode("(",$3,$4,0,UNTYPED),mknode(")",$6,$5,0,UNTYPED),1,UNTYPED);   }
+| VOID MAIN lp  rp code_block
+    { $$ = mknode("(VOID MAIN",$3,mknode(")",$4,$5,0,UNTYPED),1,UNTYPED);  }*/
+;
+
+
 
 line_statement
 	: declaration { $$ = mknode("DECLARATION", $1, NULL, 0,$1->type); }  
@@ -199,24 +214,11 @@ bool_unary_op
 		;
 
 
-user_function
-	: type ID lp rp code_block 
-		{ $$ = mknode($2->token, 
-				mknode($2->token, $1, $2, 0,$1->type),  $5, 0,$1->type); 	}
-	| type ID lp params_types_list rp code_block 
-		{ $$ = mknode($2->token, 
-				mknode($2->token, mknode($2->token, $1, $2,0,$1->type), $4,0,$1->type), 	$6,0,$1->type); 
-		}
-	/*|VOID MAIN lp params_types_list rp code_block 
-		{ $$ = mknode("(VOID MAIN",mknode("(",$3,$4,0,UNTYPED),mknode(")",$6,$5,0,UNTYPED),1,UNTYPED);   }
-	| VOID MAIN lp  rp code_block	
-		{ $$ = mknode("(VOID MAIN",$3,mknode(")",$4,$5,0,UNTYPED),1,UNTYPED);  }*/
-	;
 
 
 function_call
 	: ID lp rp 
-		{ $$ = mknode($1->token, NULL, NULL,1,UNTYPED); }
+		{ $$ = mknode($1->token, NULL, NULL,1,$1->type); }
 	| ID lp function_call_parameters_list rp 
 		{ $$ = mknode($1->token, NULL, $3,1,UNTYPED); }
 	;
@@ -252,10 +254,10 @@ initializator
 
 complex_expression
 	: basic_expression 
-		{ $$ = mknode($1->token, $1,  NULL,0,$1->type); }
+		{ $$ = mknode("complex_expression", $1,  NULL,0,$1->type); }
 	| basic_expression operator complex_expression 
 		{
-            $$ = mknode($2->token, $1, $3, 1,$2->type);
+            $$ = mknode($2->token, $1, $3, 1, $2->type);
 
              }
 	| operator complex_expression 
@@ -322,11 +324,11 @@ declarator
 	;
 
 params_types_list
-	: type { $$ = mknode("TYPE", $1, NULL,0,$1->type); }
-	| params_types_list ',' type { $$ = mknode("PARAM_TYPE_LIST", $1, $3, 0,UNTYPED); }
-	| type ID { $$ = mknode("PARAM_TYPE_LIST", $1, $2, 0,UNTYPED); }
-	| params_types_list ',' type ID 
-		{ $$ = mknode("PARAM_TYPE_LIST", $1, mknode("PARAM_TYPE_LIST", $3, $4, 0,UNTYPED), 0,UNTYPED); }
+	: type { $$ = mknode($1->token, $1, NULL,0,$1->type); }
+	| type ',' params_types_list  { $$ = mknode("TYPE", $1, $3, 0,$1->type); }
+	| type ID { $$ = mknode("TYPE", $1, $2, 0,$1->type); }
+	| type ID ',' params_types_list
+		{ $$ = mknode($1->token, mknode("TYPE", $1, $2, 0,UNTYPED),$4, 0,$1->type); }
 	;
 	
 

@@ -19,8 +19,38 @@ Bool isFuncDeclaredInScope(char* funcName, Scope* currentScope);
 void addVarsToMatrix(node* tree, Scope* scope,Type type);
 Type checkType(node* tree);
 void complexExprTyping(node* tree, int space, Scope* scope);
+void findVarsInParamList(node* tree, Scope* scope);
+//void printParamList(paramElem* head);
 
 Scope* globalScope ;
+
+
+
+
+unsigned int binarytree_count_recursive(const node *root)
+{
+    unsigned int count = 0;
+    if (root->left != NULL) {
+        if(strcmp("TYPE",root->token)==0)
+            return 1;
+        else
+            count += binarytree_count_recursive(root->left);
+    }
+    if (root->right != NULL) {
+        count += binarytree_count_recursive(root->right);
+    }
+    return count;
+}
+
+unsigned int binarytree_count(node* tree)
+{
+    unsigned int count = 0;
+    if (tree != NULL) {
+        count = binarytree_count_recursive(tree);
+    }
+    return count;
+}
+
 
 void runSemantic(node* tree){
 	//printTree(tree,0);
@@ -28,8 +58,8 @@ void runSemantic(node* tree){
 
 	//updateNodesNype(tree);
 	globalScope= createScopes(tree,globalScope);
-
-	//printMatrix(globalScope->matrix);
+    printf("\n\t\t------ GLOBAL ------\n");
+	printMatrix(globalScope->matrix);
 }
 
 
@@ -39,23 +69,31 @@ Scope* createScopes(node *tree,Scope * globalScope){
 	if(strcmp("FUNCTION_DECLARATION",tree->token)==0)
 		{
 			// add parameters list adding to matrix table
-			
-			globalScope->matrix = prependMatrixElement(globalScope->matrix,tree->left->left->token,tree->left->type,"-",TRUE,NULL);
-			globalScope = prependScope(tree->left->left->token,tree->left->type,globalScope,TRUE);
+
+            globalScope->matrix = prependMatrixElement(globalScope->matrix,tree->left->left->token,tree->left->type,"-",TRUE,0);
+            globalScope = prependScope(tree->left->left->token,tree->left->type,globalScope,TRUE);
+
+
+            //printMatrix(globalScope->matrix);
+
 		}
-				
+
+    if(strcmp("params_types_list",tree->token)==0)
+    {
+        int params = binarytree_count(tree);
+        globalScope->upperScope->matrix->paramsAmount = params;
+        findVarsInParamList(tree->right,globalScope);
+    }
+
+
 	if(strcmp("BLOCK",tree->token)==0)
 		globalScope = prependScope("(BLOCK",UNTYPED,globalScope,FALSE);
 
 
-	if(strcmp("DECLARATION",tree->token)==0)	
+	if(strcmp("DECLARATION",tree->token)==0)
 		{
 			node *subTree = tree;
 			addVarsToMatrix(subTree,globalScope,subTree->type);
-            if(strcmp("COMPLEX_EXPR",tree->token)==0)
-            {
-                complexExprTyping(tree,0,globalScope);
-            }
 		}
 
 
@@ -75,7 +113,7 @@ Scope* createScopes(node *tree,Scope * globalScope){
 
 	if(strcmp("}",tree->token)==0)
 		{
-			printMatrix(globalScope->matrix);
+			printScope(globalScope);
 			popScope(globalScope);
 		}
 
@@ -116,30 +154,16 @@ void printTree(node* tree, int space) {
 	}
 
 
-/*
-void updateNodesNype(node* tree)
-{
 
-		if(strcmp("DECLARATION",tree->token)==0)	
-		{
-		recursiveTyping(tree,tree->left->type);
-		printf("%s : %d\n", tree->token,tree->type);
-		printf("\tl -%s : %d\n", tree->left->left->token,tree->left->left->type);	
-		printf("\tr -%s : %d\n", tree->left->right->token,tree->left->right->type);
-		recursiveTyping(tree,tree->left->type);
-		}
-		
-}
-*/
 void addVarsToMatrix(node* tree,  Scope* scope, Type type) {
 
 
     if(strcmp(tree->token,"ID")==0)
     {
         if(isVariableDeclaredInScope(tree->left->token,scope)==FALSE)
-            scope->matrix = prependMatrixElement(scope->matrix,tree->left->token,type,"-",FALSE,NULL);
-        else
-            printf("Variable %s is already exists\n",tree->left->token);
+            scope->matrix = prependMatrixElement(scope->matrix,tree->left->token,type,"-",FALSE,0);
+        /*else
+            printf("Variable %s is already exists\n",tree->left->token);*/
 			}
 
     if (tree->left)
@@ -151,32 +175,47 @@ void addVarsToMatrix(node* tree,  Scope* scope, Type type) {
 
 
 void complexExprTyping(node* tree, int space, Scope* scope) {
-    int i;
+
     if (tree->right)
         complexExprTyping(tree->right, space,scope);
 
     if (tree->left)
         complexExprTyping(tree->left, space,scope);
 
+    if(strcmp("function_call",tree->token)==0)
+    {
+
+        if (isFuncDeclaredInScope(tree->left->token, scope) == TRUE) {
+            Type type = getFuncTypeScope(tree->left->token, scope);
+            tree->type = type;
+        }
+        else
+        {
+            printf("%s : function \'%s\' %s\n", symantic_error, tree->left->left->token,error_text[UNDECLARED]);
+            exit(UNDECLARED);
+        }
+    }
+
 
     if(tree->type == ID_TYPE) {
         Type type;
+
         if (isVariableDeclaredInScope(tree->token, scope) == TRUE) {
             type = getVarTypeScope(tree->token, scope);
             tree->type = type;
-        } else if (isFuncDeclaredInScope(tree->left->token, scope) == TRUE) {
-            printf("FUNC: %s\n", tree->left->token);
-            Type type = getFuncTypeScope(tree->left->token, scope);
-            //tree->left->type = type;
-            tree->type = type;
-        } else {
-            printf("%s : %s\n", symantic_error, error_text[USING_UNDECLARED_FUNCTION]);
-            exit(USING_UNDECLARED_FUNCTION);
         }
-
+        if (isFuncDeclaredInScope(tree->token, scope) == TRUE) {
+            Type type = getFuncTypeScope(tree->token, scope);
+            tree->type = type;
+        }
+        else {
+            printf("%s : %s %s\n", symantic_error, tree->token,error_text[UNDECLARED]);
+            exit(UNDECLARED);
+        }
     }
+
     tree->type = checkType(tree);
-   // printf("%s:%d\n", tree->token,tree->type);
+    //printf("%s:%d\n", tree->token,tree->type);
 
 }
 
@@ -207,3 +246,21 @@ Type checkType(node* tree){
     return tree->type;
 
 }
+
+
+void findVarsInParamList(node* tree, Scope* scope){
+    if(strcmp("TYPE",tree->token)==0) {
+        if(tree->left && tree->right)
+            //printf("%s : %s : %d\n",scope->name,tree->right->token,tree->left->type);
+            if(isVariableDeclaredInScope(tree->right->token,scope)==FALSE)
+                scope->matrix = prependMatrixElement(scope->matrix,tree->right->token,tree->left->type,"-",FALSE,0);
+
+    }
+    if(tree->left)
+        findVarsInParamList(tree->left,scope);
+        if(tree->right)
+            findVarsInParamList(tree->right,scope);
+}
+
+
+

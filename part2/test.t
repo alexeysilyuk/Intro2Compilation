@@ -1,23 +1,11 @@
-char sqrt() {
-	int u=7;
-	return u;
+
+void main(int r)
+{
+	int foo(int x){
 }
-void main(){
+	int ff = 1*foo()+foo()*1;
 
-
-	int doo(){
-int x;
-		int y = x;
-
-	}
-
-
-
-	
 }
-
-// int y[1] = x[2];
-// int str = |x|;
 
 
 
