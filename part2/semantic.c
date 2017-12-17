@@ -13,40 +13,70 @@ typedef struct node {
 
 
 void printTree(node* tree, int space);
-Scope* createScopes(node *tree,Scope * globalScope);
+void createScopes(node *tree,Scope * globalScope);
 void updateNodesNype(node* tree);
 Bool isFuncDeclaredInScope(char* funcName, Scope* currentScope);
 void addVarsToMatrix(node* tree, Scope* scope,Type type);
 Type checkType(node* tree);
 void complexExprTyping(node* tree, int space, Scope* scope);
-void findVarsInParamList(node* tree, Scope* scope);
+void findVarsInParamList(node* tree, Scope* scope, matrixElement* matrix);
+int funcCallParamsCount(node* tree);
+Bool isAmountOfParamsCompare(Scope* scope, char* funcName, int paramsAmount);
 //void printParamList(paramElem* head);
 
 Scope* globalScope ;
+paramElem* tempList;
 
 
+paramElem* addVarsToParamList(const node *root)
+{
+    if (strcmp("TYPE", root->token) == 0) {
+        paramElem *newElem = createParamElem(root->right->token, root->left->type);
+        tempList = prependParamElem(newElem, tempList);
+    }
+    if (root->left)
+        addVarsToParamList(root->left);
+
+    if (root->right)
+        addVarsToParamList(root->right);
 
 
-unsigned int binarytree_count_recursive(const node *root)
+}
+
+unsigned int funcCallCountParams(const node *root)
+{
+
+    if(root)
+    {
+        if(strcmp("FUNC_PARAM",root->token)==0)
+            return 1+funcCallCountParams(root->right);
+        else
+            return funcCallCountParams(root->right);
+    }
+}
+
+unsigned int binarytree_count_recursive(const node *root, char* key)
 {
     unsigned int count = 0;
     if (root->left != NULL) {
-        if(strcmp("TYPE",root->token)==0)
+        if(strcmp(key,root->token)==0)
             return 1;
+
         else
-            count += binarytree_count_recursive(root->left);
+            count += binarytree_count_recursive(root->left,key);
     }
     if (root->right != NULL) {
-        count += binarytree_count_recursive(root->right);
+        count += binarytree_count_recursive(root->right,key);
     }
     return count;
 }
 
-unsigned int binarytree_count(node* tree)
+unsigned int binarytree_count(node* tree, char* key)
 {
+
     unsigned int count = 0;
     if (tree != NULL) {
-        count = binarytree_count_recursive(tree);
+        count = binarytree_count_recursive(tree,key);
     }
     return count;
 }
@@ -57,13 +87,16 @@ void runSemantic(node* tree){
 	globalScope= createScope("GLOBAL",UNTYPED,NULL,FALSE);
 
 	//updateNodesNype(tree);
-	globalScope= createScopes(tree,globalScope);
-    printf("\n\t\t------ GLOBAL ------\n");
-	printMatrix(globalScope->matrix);
+	createScopes(tree,globalScope);
+    //printf("\n\t\t------ GLOBAL ------\n");
+	//printScope(globalScope);
+//
+//    printf("UpperScope : %s\n",globalScope->name);
+//    printParamsList(globalScope->matrix->paramList);
 }
 
 
-Scope* createScopes(node *tree,Scope * globalScope){
+void createScopes(node *tree,Scope * globalScope){
 
 	int space=0;
 	if(strcmp("FUNCTION_DECLARATION",tree->token)==0)
@@ -73,34 +106,38 @@ Scope* createScopes(node *tree,Scope * globalScope){
             globalScope->matrix = prependMatrixElement(globalScope->matrix,tree->left->left->token,tree->left->type,"-",TRUE,0);
             globalScope = prependScope(tree->left->left->token,tree->left->type,globalScope,TRUE);
 
-
             //printMatrix(globalScope->matrix);
 
 		}
+    if(strcmp("DECLARATION",tree->token)==0)
+    {
+        node *subTree = tree;
+        addVarsToMatrix(subTree,globalScope,subTree->type);
+    }
 
     if(strcmp("params_types_list",tree->token)==0)
     {
-        int params = binarytree_count(tree);
+        int params = binarytree_count(tree,"TYPE");
         globalScope->upperScope->matrix->paramsAmount = params;
-        findVarsInParamList(tree->right,globalScope);
+
+        findVarsInParamList(tree->right,globalScope,globalScope->upperScope->matrix);
+
     }
 
 
-	if(strcmp("BLOCK",tree->token)==0)
-		globalScope = prependScope("(BLOCK",UNTYPED,globalScope,FALSE);
+//	if(strcmp("BLOCK",tree->token)==0)
+//		globalScope = prependScope("(BLOCK",UNTYPED,globalScope,FALSE);
 
 
-	if(strcmp("DECLARATION",tree->token)==0)
-		{
-			node *subTree = tree;
-			addVarsToMatrix(subTree,globalScope,subTree->type);
-		}
+
 
 
 //	if(strcmp("function_call",tree->token)==0)
 //		{
 //			if(isFuncDeclaredInScope(tree->left->token,globalScope)==TRUE)
-//				printf("%s is declared\n",tree->left->token);
+//            {
+//
+//            }
 //			else
 //				printf("%s is NOT declared\n",tree->left->token);
 //		}
@@ -113,8 +150,10 @@ Scope* createScopes(node *tree,Scope * globalScope){
 
 	if(strcmp("}",tree->token)==0)
 		{
+
 			printScope(globalScope);
 			popScope(globalScope);
+            //printMatrix(globalScope->matrix);
 		}
 
 			
@@ -124,15 +163,14 @@ Scope* createScopes(node *tree,Scope * globalScope){
 		createScopes(tree->right,globalScope);
 		
 	//printMatrix(globalScope->matrix);
-	return globalScope;
+	//return globalScope;
 }
 
 void printTree(node* tree, int space) {
 	int i;
 
 		if(tree->printHeader==1)
-		{	
-
+		{
 			for (i= 0; i< space; i++) 
 				{ printf("   "); }
 				printf("%s\n", tree->token);
@@ -162,6 +200,7 @@ void addVarsToMatrix(node* tree,  Scope* scope, Type type) {
     {
         if(isVariableDeclaredInScope(tree->left->token,scope)==FALSE)
             scope->matrix = prependMatrixElement(scope->matrix,tree->left->token,type,"-",FALSE,0);
+
         /*else
             printf("Variable %s is already exists\n",tree->left->token);*/
 			}
@@ -188,6 +227,16 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
         if (isFuncDeclaredInScope(tree->left->token, scope) == TRUE) {
             Type type = getFuncTypeScope(tree->left->token, scope);
             tree->type = type;
+
+            int params = funcCallCountParams(tree->left);
+            if(isAmountOfParamsCompare(scope,tree->left->token,params) == FALSE){
+                printf("function %s have incorrect amount of parameters!\n",tree->left->token);
+            }
+            //funcCallParamsCount(tree);
+            //if(tree->right)
+                //funcCallParamsCount(tree);
+
+
         }
         else
         {
@@ -196,15 +245,14 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
         }
     }
 
-
     if(tree->type == ID_TYPE) {
         Type type;
-
+        //printf("ID:%s\n",tree->token);
         if (isVariableDeclaredInScope(tree->token, scope) == TRUE) {
             type = getVarTypeScope(tree->token, scope);
             tree->type = type;
         }
-        if (isFuncDeclaredInScope(tree->token, scope) == TRUE) {
+        else if (isFuncDeclaredInScope(tree->token, scope) == TRUE) {
             Type type = getFuncTypeScope(tree->token, scope);
             tree->type = type;
         }
@@ -247,20 +295,60 @@ Type checkType(node* tree){
 
 }
 
+void addParamToParamList(matrixElement* upperMatrix, char* scopeName, char* name, Type type){
 
-void findVarsInParamList(node* tree, Scope* scope){
+        matrixElement* tempMatrix = upperMatrix;
+        while(tempMatrix){
+            if(strcmp(scopeName,tempMatrix->name)==0 && tempMatrix->isFunc==TRUE){
+                upperMatrix->paramsTypes[upperMatrix->paramTypeIndex] = type;
+                upperMatrix->paramTypeIndex++;
+                printf("%s : %d\n",name,upperMatrix->paramsTypes[upperMatrix->paramTypeIndex-1]);
+                //addParamToParamList(upperMatrix, scope->name,tree->right->token, tree->left->type);
+               // tempMatrix->paramList = prependParamElem(newElem,tempMatrix->paramList);
+            }
+            tempMatrix=tempMatrix->next;
+
+        }
+
+}
+
+
+void findVarsInParamList(node* tree, Scope* scope, matrixElement* matrix){
     if(strcmp("TYPE",tree->token)==0) {
         if(tree->left && tree->right)
             //printf("%s : %s : %d\n",scope->name,tree->right->token,tree->left->type);
             if(isVariableDeclaredInScope(tree->right->token,scope)==FALSE)
+            {
                 scope->matrix = prependMatrixElement(scope->matrix,tree->right->token,tree->left->type,"-",FALSE,0);
-
+                addParamToParamList(matrix, scope->name,tree->right->token, tree->left->type);
+            }
     }
     if(tree->left)
-        findVarsInParamList(tree->left,scope);
+        findVarsInParamList(tree->left,scope,matrix);
         if(tree->right)
-            findVarsInParamList(tree->right,scope);
+            findVarsInParamList(tree->right,scope,matrix);
 }
 
+Bool isAmountOfParamsCompare(Scope* scope, char* funcName, int paramsAmount){
+    Scope* temp = scope;
+    int params=-1;
+    if(isFuncDeclaredInScope(funcName,temp)==FALSE)
+        printf("Func %s not declared in scope %s\n",funcName,scope->name);
+
+    while(temp){
+        matrixElement *current = temp->matrix;
+
+        while(current)
+        {
+            if(strcmp(funcName,current->name)==0 && current->isFunc==TRUE)
+                params = current->paramsAmount;
+
+            current = current->next;
+        }
+
+        temp = temp->upperScope;
+    }
+    return params==paramsAmount;
+}
 
 

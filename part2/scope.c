@@ -33,7 +33,6 @@ Scope* createScope(char* name, Type returnType, Scope* upperScope, Bool isFuncti
     newScope->matrix = matrixHead;
     newScope->returnType=returnType;
     newScope->isFunction = isFunction;
-    //newScope->scopeParamsList=paramList;
 
     newScope->upperScope=upperScope;
 
@@ -81,14 +80,13 @@ Bool isFuncDeclaredInScope(char* funcName, Scope* currentScope)
 
 Bool isVariableDeclaredInScope(char* varName, Scope* currentScope)
 {
-	while(currentScope)
+	if(currentScope)
 	{
 		if(isVariableInMatrix(varName,currentScope->matrix)== TRUE)
 				return TRUE;
-		else
+		/*else
             currentScope=currentScope->upperScope;
-
-
+*/
 	}
 	return FALSE;
 
@@ -128,6 +126,7 @@ Type getFuncTypeScope(char* varName, Scope* currentScope)
 
 void printScope(Scope* head)
 {
+    printf("\n----------------------------------------------\n");
     if(head){
         printf("Scope : %s, Type : %d, Func : %d\n",head->name,head->returnType, head->isFunction);
         if(head->matrix)
@@ -138,4 +137,5 @@ void printScope(Scope* head)
         head= head->upperScope;
 
     }
+    printf("\n----------------------------------------------\n");
 }

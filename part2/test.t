@@ -1,10 +1,20 @@
-
-void main(int r)
+int boo(int xx){
+	int y = xx+1;
+	}
+int foo(int x, int y, char z){
+	int y = x+1;
+	}
+void main(int r, int z)
 {
-	int foo(int x){
-}
-	int ff = 1*foo()+foo()*1;
 
+
+	int x;
+
+	int ff = 1*boo(1)+foo(2,3,4)*1;
+
+	int too(char tt){
+		int y = 1;
+	}
 }
 
 

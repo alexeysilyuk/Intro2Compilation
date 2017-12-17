@@ -12,6 +12,12 @@ char* error_text[] ={"Undeclared","Using undeclared variable",
 
 typedef enum bool{FALSE,TRUE} Bool;
 
+typedef struct paramElem{
+    char* name;
+    Type type;
+    struct paramElem* next;
+
+}paramElem;
 
 typedef struct matrixElement
 {
@@ -20,7 +26,9 @@ typedef struct matrixElement
     char* value;
     Bool isFunc;
     int paramsAmount;
-    //paramElem* paramList;
+    int paramTypeIndex;
+    Type* paramsTypes;
+    paramElem* paramList;
     struct matrixElement* next;
 } matrixElement;
 
@@ -29,6 +37,7 @@ typedef struct matrixElement
 
 
 Bool isFuncInMatrix(char* name, matrixElement* head);
+void printParamsList(paramElem* head);
 
 matrixElement* createMatrixElement(char* name, Type type, char* value,Bool isFunc,int paramsAmount, matrixElement* next)
 {
@@ -43,7 +52,10 @@ matrixElement* createMatrixElement(char* name, Type type, char* value,Bool isFun
 	new_node->value = strdup(value);
 	new_node->isFunc = isFunc;
 	new_node->paramsAmount = paramsAmount;
-    
+    new_node->paramsTypes = (Type*)malloc(10* sizeof(Type));
+    new_node->paramList = NULL;
+    new_node->paramTypeIndex=0;
+
     new_node->next = next;
     return new_node;
 }
@@ -63,10 +75,11 @@ void printMatrix(matrixElement* head){
 	matrixElement *current = head;
 	while(current!=NULL){
 		printf("\t%s, type : %d, value : %s\n",current->name,current->type, current->value);
-        if(current->isFunc)
-            printf("\t\t%s have %d params in declaration\n",current->name,current->paramsAmount);
-
-            current= current->next;
+        if(current->isFunc) {
+            printf("\t\t%s have %d params in declaration\n", current->name, current->paramsAmount);
+            printParamsList(head->paramList);
+        }
+        current= current->next;
     }
 }
 
@@ -118,3 +131,34 @@ Type getFuncTypeMatrix(char* name, matrixElement* head){
     }
     return UNTYPED;
 }
+
+paramElem* prependParamElem(paramElem* newElem, paramElem* head){
+    newElem->next = head;
+    head = newElem;
+    return head;
+}
+
+paramElem* createParamElem(char* name, Type type)
+{
+    paramElem* newElem = (paramElem*)malloc(sizeof(paramElem));
+    if(!newElem){
+        printf("Can't allocat memory for paramElem element");
+        exit(1);
+    }
+    newElem->name = strdup(name);
+    newElem->type = type;
+    newElem->next = NULL;
+
+    return newElem;
+
+}
+
+void printParamsList(paramElem* head){
+
+    while(head){
+        printf("\t\t\t%s:%d\n",head->name, head->type);
+        head = head->next;
+    }
+
+}
+

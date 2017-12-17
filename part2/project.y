@@ -39,7 +39,7 @@ node* mknode (char* token, node* left, node* right, int printHeader, Type type);
 %type <node> for_block_inits for_block_single_init for_block_inits_update for_block_boolean_expr boolean_expr
 %type <node> boolean_expr_complex boolean_expr_simple bool_binary_op bool_unary_op user_function function_call
 %type <node> function_call_parameters_list  list_of_declarators declarator_initialization initializator complex_expression
-%type <node> basic_expression integer parameters_list  terminal_const_values literals declarator params_types_list
+%type <node> basic_expression integer  terminal_const_values literals declarator params_types_list
 %type <node> array_size  type operator bitwise_operators expression other ID lp rp inc_dec 
 %%
 
@@ -188,15 +188,15 @@ boolean_expr
 		;
 
 boolean_expr_complex
-		: boolean_expr_complex bool_binary_op boolean_expr_simple 
-			{ $$ = mknode($2->token, $1, $3, 1,UNTYPED); }
+		: boolean_expr_simple bool_binary_op boolean_expr_complex
+			{ $$ = mknode($2->token, $1, $3, 1,$1->type); }
 		| boolean_expr_simple 
-			{ $$ = mknode("BOOLEAN_EXPR_COMPLEX", $1, NULL, 0,UNTYPED); }
+			{ $$ = mknode("BOOLEAN_EXPR_COMPLEX", $1, NULL, 0,$1->type); }
 		;
 
 
 boolean_expr_simple
-		: complex_expression { $$ = mknode("COMPLEX_EXPR", $1, NULL,0,UNTYPED); }
+		: complex_expression { $$ = mknode("COMPLEX_EXPR", $1, NULL,0,$1->type); }
 		| other  { $$ = mknode("OTHER", $1, NULL,0,UNTYPED); }
 		;
 
@@ -220,14 +220,14 @@ function_call
 	: ID lp rp 
 		{ $$ = mknode($1->token, NULL, NULL,1,$1->type); }
 	| ID lp function_call_parameters_list rp 
-		{ $$ = mknode($1->token, NULL, $3,1,UNTYPED); }
+		{ $$ = mknode($1->token, NULL, $3,1,$1->type); }
 	;
 
 function_call_parameters_list 
 	: complex_expression 
-		{ $$ = mknode("FUNC_PARAM", $1, NULL, 0,UNTYPED); }
-	| complex_expression ',' parameters_list 
-		{ $$ = mknode("FUNC_PARAM", $1, $3, 0,UNTYPED); }
+		{ $$ = mknode("FUNC_PARAM", $1, NULL, 1,$1->type); }
+	| complex_expression ',' function_call_parameters_list
+		{ $$ = mknode("FUNC_PARAM", $1, $3, 1,$1->type); }
 	;
 	
 
@@ -287,7 +287,7 @@ basic_expression
 integer
 	: INT_CONSTANT_VALUE { $$ = mknode(yytext,NULL,NULL,1,INT_TYPE);};
 
-
+/*
 parameters_list
 	: complex_expression { $$ = mknode("PARAM_LIST", $1,  NULL,0,UNTYPED); }
 	| type complex_expression { $$ = mknode("PARAM_LIST", $1, $2, 1,UNTYPED); }
@@ -297,7 +297,7 @@ parameters_list
 		{ $$ = mknode("PARAM_LIST", 
 				mknode("PARAM_LIST", $1, $2, 0,UNTYPED), $4, 0,UNTYPED); }
 	;
-
+*/
 terminal_const_values
 	: INT_CONSTANT_VALUE { $$ = mknode(yytext, NULL, NULL,  1,INT_TYPE);}
 	| BOOL_CONSTANT_VALUE { $$ = mknode(yytext, NULL, NULL, 1,BOOLEAN_TYPE);}
