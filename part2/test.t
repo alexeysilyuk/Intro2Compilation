@@ -1,20 +1,27 @@
-int boo(int xx){
-	int y = xx+1;
+int boo(int t){
+	int ttt = 2+1;
+}
+int foo(int x, int y, int z,int asd){
+	int t = x+1;
+	int ttt = x+1;
+
 	}
-int foo(int x, int y, char z){
-	int y = x+1;
-	}
-void main(int r, int z)
+
+int main()
 {
 
 
 	int x;
 
-	int ff = 1*boo(1)+foo(2,3,4)*1;
+	char ff = 1*boo('a')+foo(2,boo(1+2),3,4)*5;
 
 	int too(char tt){
 		int y = 1;
 	}
+
+
+
+
 }
 
 

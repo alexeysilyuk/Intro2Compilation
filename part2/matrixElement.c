@@ -4,10 +4,11 @@
 
 
 typedef enum type {ERROR=-2, UNTYPED=-1,BOOLEAN_TYPE=0, CHAR_TYPE=1, INT_TYPE=2, STRING_TYPE=3, CHARP_TYPE=4, INTP_TYPE=5, BIN_TYPE=6,OCT_TYPE=7,HEX_TYPE=8, VOID_TYPE=9, ID_TYPE=10 } Type;
-typedef enum error_codes {UNDECLARED,USING_UNDECLARED_VARIABLE,INCOMPATIBLE_TYPES,USING_UNDECLARED_FUNCTION} error_codes;
+typedef enum error_codes {UNDECLARED,USING_UNDECLARED_VARIABLE,INCOMPATIBLE_TYPES,USING_UNDECLARED_FUNCTION, MAIN_REDECLARATION} error_codes;
 char* symantic_error = "Symantic Error";
 char* error_text[] ={"Undeclared","Using undeclared variable",
-              "Incompatible types", "Using undeclared function"
+              "Incompatible types", "Using undeclared function",
+                     "Main function is already declared in program!"
 };
 
 typedef enum bool{FALSE,TRUE} Bool;
@@ -32,12 +33,12 @@ typedef struct matrixElement
     struct matrixElement* next;
 } matrixElement;
 
-
+Bool isMainDeclared;
 
 
 
 Bool isFuncInMatrix(char* name, matrixElement* head);
-void printParamsList(paramElem* head);
+void printParamsList(Type* typesList, int ammount);
 
 matrixElement* createMatrixElement(char* name, Type type, char* value,Bool isFunc,int paramsAmount, matrixElement* next)
 {
@@ -65,6 +66,7 @@ matrixElement* prependMatrixElement(matrixElement* head,char* name, Type type, c
 {
     //printf("\tName : %s, type : %d, value : %s\n",name,type, value);
     matrixElement* new_node = createMatrixElement(name,type,value,isFunc,paramsAmount,head);
+
     //printf("\tName : %s, type : %d, value : %s\n",new_node->name,new_node->type, new_node->value);
     head = new_node;
     return head;
@@ -77,7 +79,8 @@ void printMatrix(matrixElement* head){
 		printf("\t%s, type : %d, value : %s\n",current->name,current->type, current->value);
         if(current->isFunc) {
             printf("\t\t%s have %d params in declaration\n", current->name, current->paramsAmount);
-            printParamsList(head->paramList);
+            printParamsList(head->paramsTypes,head->paramsAmount);
+
         }
         current= current->next;
     }
@@ -90,8 +93,8 @@ Bool isFuncInMatrix(char* name, matrixElement* head){
         {
             if(strcmp(name,current->name)==0 && current->isFunc==TRUE)
                 return TRUE;
-            else
-                current = current->next;
+
+            current = current->next;
         }
         return FALSE;
 }
@@ -102,8 +105,8 @@ Bool isVariableInMatrix(char* name, matrixElement* head){
         {
             if(strcmp(name,current->name)==0 && current->isFunc==FALSE)
                 return TRUE;
-            else
-                current = current->next;
+
+            current = current->next;
         }
         return FALSE;
 }
@@ -153,11 +156,16 @@ paramElem* createParamElem(char* name, Type type)
 
 }
 
-void printParamsList(paramElem* head){
+void printParamsList(Type* typesList, int ammount){
 
-    while(head){
-        printf("\t\t\t%s:%d\n",head->name, head->type);
-        head = head->next;
+    if(typesList){
+        int i;
+        for(i=0;i<ammount;i++)
+        {
+            if(typesList[i])
+                printf("\t\t\t%d\n",typesList[i]);
+        }
+
     }
 
 }

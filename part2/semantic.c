@@ -21,11 +21,15 @@ Type checkType(node* tree);
 void complexExprTyping(node* tree, int space, Scope* scope);
 void findVarsInParamList(node* tree, Scope* scope, matrixElement* matrix);
 int funcCallParamsCount(node* tree);
-Bool isAmountOfParamsCompare(Scope* scope, char* funcName, int paramsAmount);
+Bool isAmountOfParamsCompare(Scope* scope, char* funcName, int paramsAmount,Type* compareParamsList);
+void checkMainCorrectness();
+void funcCallParamsListTyping(node* tree,Scope* globalScope);
+void function_call(node* tree);
 //void printParamList(paramElem* head);
 
 Scope* globalScope ;
 paramElem* tempList;
+
 
 
 paramElem* addVarsToParamList(const node *root)
@@ -43,15 +47,18 @@ paramElem* addVarsToParamList(const node *root)
 
 }
 
-unsigned int funcCallCountParams(const node *root)
+unsigned int funcCallCountParams(const node *root,Type* typesArray, int i)
 {
 
     if(root)
     {
         if(strcmp("FUNC_PARAM",root->token)==0)
-            return 1+funcCallCountParams(root->right);
+        {
+            typesArray[i++] = root->type;
+            return 1+funcCallCountParams(root->right,typesArray,i);
+        }
         else
-            return funcCallCountParams(root->right);
+            return funcCallCountParams(root->right,typesArray,i);
     }
 }
 
@@ -83,26 +90,42 @@ unsigned int binarytree_count(node* tree, char* key)
 
 
 void runSemantic(node* tree){
+    isMainDeclared=FALSE;
 	//printTree(tree,0);
 	globalScope= createScope("GLOBAL",UNTYPED,NULL,FALSE);
 
 	//updateNodesNype(tree);
+
 	createScopes(tree,globalScope);
-    //printf("\n\t\t------ GLOBAL ------\n");
+    checkMainCorrectness();
+    printf("\n\t\t------ GLOBAL ------\n");
 	//printScope(globalScope);
-//
-//    printf("UpperScope : %s\n",globalScope->name);
-//    printParamsList(globalScope->matrix->paramList);
+
+
+    //printf("GLOBAL : %s\n",globalScope->name);
+    printMatrix(globalScope->matrix);
 }
 
 
 void createScopes(node *tree,Scope * globalScope){
 
-	int space=0;
 	if(strcmp("FUNCTION_DECLARATION",tree->token)==0)
 		{
 			// add parameters list adding to matrix table
-
+            if(strcmp("main", tree->left->left->token)==0) {
+                if (isMainDeclared == FALSE) {
+                    isMainDeclared = TRUE;
+                }
+                else {
+                    printf("%s\n", error_text[MAIN_REDECLARATION]);
+                    exit(MAIN_REDECLARATION);
+                }
+            }
+            if(isFuncDeclaredInCurrentScope(tree->left->left->token,globalScope)==TRUE)
+            {
+                printf("Function %s is already declared in this scope\n",tree->left->left->token);
+                exit(ERROR);
+            }
             globalScope->matrix = prependMatrixElement(globalScope->matrix,tree->left->left->token,tree->left->type,"-",TRUE,0);
             globalScope = prependScope(tree->left->left->token,tree->left->type,globalScope,TRUE);
 
@@ -119,7 +142,7 @@ void createScopes(node *tree,Scope * globalScope){
     {
         int params = binarytree_count(tree,"TYPE");
         globalScope->upperScope->matrix->paramsAmount = params;
-
+        printf("%s have %d params\n",globalScope->name,params);
         findVarsInParamList(tree->right,globalScope,globalScope->upperScope->matrix);
 
     }
@@ -132,20 +155,38 @@ void createScopes(node *tree,Scope * globalScope){
 
 
 
-//	if(strcmp("function_call",tree->token)==0)
-//		{
-//			if(isFuncDeclaredInScope(tree->left->token,globalScope)==TRUE)
-//            {
-//
-//            }
-//			else
-//				printf("%s is NOT declared\n",tree->left->token);
-//		}
-
-    if(strcmp("COMPLEX_EXPR",tree->token)==0)
+    /*if(strcmp("function_call",tree->token)==0)
     {
-        complexExprTyping(tree,0,globalScope);
+
+        if (isFuncDeclaredInScope(tree->left->token, globalScope) == TRUE) {
+            Type type = getFuncTypeScope(tree->left->token, globalScope);
+            tree->type = type;
+
+            Type* typesArray = (Type*)malloc(10* sizeof(Type));
+            int params = funcCallCountParams(tree->left,typesArray,0);
+
+            if(isAmountOfParamsCompare(globalScope,tree->left->token,params,typesArray) == FALSE){
+                printf("function %s have incorrect amount of parameters!\n",tree->left->token);
+                exit(ERROR);
+            }
+            //funcCallParamsCount(tree);
+            //if(tree->right)
+            //funcCallParamsCount(tree);
+
+
+        }
+        else
+        {
+            printf("%s : function \'%s\' %s\n", symantic_error, tree->left->left->token,error_text[UNDECLARED]);
+            exit(UNDECLARED);
+        }
     }
+*/
+    if(strcmp("FUNC_PARAM",tree->token)==0){
+        funcCallParamsListTyping(tree,globalScope);
+    }
+
+
 
 
 	if(strcmp("}",tree->token)==0)
@@ -201,8 +242,10 @@ void addVarsToMatrix(node* tree,  Scope* scope, Type type) {
         if(isVariableDeclaredInScope(tree->left->token,scope)==FALSE)
             scope->matrix = prependMatrixElement(scope->matrix,tree->left->token,type,"-",FALSE,0);
 
-        /*else
-            printf("Variable %s is already exists\n",tree->left->token);*/
+        else {
+            printf("Variable %s is already exists\n", tree->left->token);
+            exit(ERROR);
+        }
 			}
 
     if (tree->left)
@@ -221,28 +264,10 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
     if (tree->left)
         complexExprTyping(tree->left, space,scope);
 
+
     if(strcmp("function_call",tree->token)==0)
     {
-
-        if (isFuncDeclaredInScope(tree->left->token, scope) == TRUE) {
-            Type type = getFuncTypeScope(tree->left->token, scope);
-            tree->type = type;
-
-            int params = funcCallCountParams(tree->left);
-            if(isAmountOfParamsCompare(scope,tree->left->token,params) == FALSE){
-                printf("function %s have incorrect amount of parameters!\n",tree->left->token);
-            }
-            //funcCallParamsCount(tree);
-            //if(tree->right)
-                //funcCallParamsCount(tree);
-
-
-        }
-        else
-        {
-            printf("%s : function \'%s\' %s\n", symantic_error, tree->left->left->token,error_text[UNDECLARED]);
-            exit(UNDECLARED);
-        }
+        function_call(tree);
     }
 
     if(tree->type == ID_TYPE) {
@@ -263,7 +288,7 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
     }
 
     tree->type = checkType(tree);
-    //printf("%s:%d\n", tree->token,tree->type);
+
 
 }
 
@@ -285,6 +310,7 @@ Type checkType(node* tree){
             printf("%s : %s!\n",symantic_error,error_text[INCOMPATIBLE_TYPES]);
             exit(INCOMPATIBLE_TYPES);
         }
+
     }
 
     if(tree->left)
@@ -329,8 +355,9 @@ void findVarsInParamList(node* tree, Scope* scope, matrixElement* matrix){
             findVarsInParamList(tree->right,scope,matrix);
 }
 
-Bool isAmountOfParamsCompare(Scope* scope, char* funcName, int paramsAmount){
+Bool isAmountOfParamsCompare(Scope* scope, char* funcName, int paramsAmount,Type* compareParamsList){
     Scope* temp = scope;
+    Type* orignalParamsList;
     int params=-1;
     if(isFuncDeclaredInScope(funcName,temp)==FALSE)
         printf("Func %s not declared in scope %s\n",funcName,scope->name);
@@ -341,14 +368,85 @@ Bool isAmountOfParamsCompare(Scope* scope, char* funcName, int paramsAmount){
         while(current)
         {
             if(strcmp(funcName,current->name)==0 && current->isFunc==TRUE)
+            {
                 params = current->paramsAmount;
+                orignalParamsList=current->paramsTypes;
+            }
 
             current = current->next;
         }
 
         temp = temp->upperScope;
     }
+    int i;
+
+    if(params!=paramsAmount)
+        return FALSE;
+
+    for(i=0;i<params;i++){
+        if(orignalParamsList[i]!=compareParamsList[i])
+        {
+            printf("expexted type: %d, received type: %d\n",orignalParamsList[i],compareParamsList[i]);
+            exit(ERROR);
+        }
+    }
     return params==paramsAmount;
 }
 
 
+
+
+
+void checkMainCorrectness(){
+    if(isMainDeclared==FALSE){
+        printf("Program must have \'main\' function!\n");
+        exit(ERROR);
+    }
+    while(globalScope->matrix){
+        if(strcmp("main", globalScope->matrix->name)==0 && globalScope->matrix->isFunc==TRUE){
+            if(globalScope->matrix->paramsAmount!=0)
+            {
+                printf("Main function can not have parameters!\n");
+                exit(ERROR);
+            }
+        }
+        globalScope->matrix = globalScope->matrix->next;
+    }
+}
+
+void funcCallParamsListTyping(node* tree,Scope* globalScope){
+
+    if(strcmp("complex_expression",tree->token)==0)
+    {
+        complexExprTyping(tree,0,globalScope);
+    }
+
+    if(tree->left)
+        funcCallParamsListTyping(tree->left,globalScope);
+    if(tree->right)
+        funcCallParamsListTyping(tree->right,globalScope);
+
+
+
+}
+
+void function_call(node* tree){
+    if (isFuncDeclaredInScope(tree->left->token, globalScope) == TRUE) {
+        Type type = getFuncTypeScope(tree->left->token, globalScope);
+        tree->type = type;
+
+        Type* typesArray = (Type*)malloc(10* sizeof(Type));
+        int params = funcCallCountParams(tree->left,typesArray,0);
+
+        if(isAmountOfParamsCompare(globalScope,tree->left->token,params,typesArray) == FALSE){
+            printf("function %s have incorrect amount of parameters!\n",tree->left->token);
+            exit(ERROR);
+        }
+
+    }
+    else
+    {
+        printf("%s : function \'%s\' %s\n", symantic_error, tree->left->left->token,error_text[UNDECLARED]);
+        exit(UNDECLARED);
+    }
+}

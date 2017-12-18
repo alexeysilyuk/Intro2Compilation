@@ -70,11 +70,22 @@ Bool isFuncDeclaredInScope(char* funcName, Scope* currentScope)
 		if(isFuncInMatrix(funcName,currentScope->matrix)== TRUE)
 				return TRUE;
 		else
-			currentScope=currentScope->upperScope;	
+			currentScope=currentScope->upperScope;
 
 	}
 	return FALSE;
 	
+}
+
+Bool isFuncDeclaredInCurrentScope(char* funcName, Scope* currentScope)
+{
+    if(currentScope)
+    {
+        if(isFuncInMatrix(funcName,currentScope->matrix)== TRUE)
+            return TRUE;
+    }
+    return FALSE;
+
 }
 
 

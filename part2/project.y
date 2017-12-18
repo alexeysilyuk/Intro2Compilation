@@ -196,7 +196,7 @@ boolean_expr_complex
 
 
 boolean_expr_simple
-		: complex_expression { $$ = mknode("COMPLEX_EXPR", $1, NULL,0,$1->type); }
+		: complex_expression { $$ = mknode("complex_expression", $1, NULL,1,$1->type); }
 		| other  { $$ = mknode("OTHER", $1, NULL,0,UNTYPED); }
 		;
 
@@ -257,11 +257,11 @@ complex_expression
 		{ $$ = mknode("complex_expression", $1,  NULL,0,$1->type); }
 	| basic_expression operator complex_expression 
 		{
-            $$ = mknode($2->token, $1, $3, 1, $2->type);
+            $$ = mknode("complex_expression", $1, $3, 1, $2->type);
 
              }
 	| operator complex_expression 
-		{ $$ = mknode($1->token, NULL, $2, 1,$2->type); }
+		{ $$ = mknode("complex_expressioncomplex_expression", NULL, $2, 1,$2->type); }
 	
 	;
 
