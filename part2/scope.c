@@ -91,14 +91,13 @@ Bool isFuncDeclaredInCurrentScope(char* funcName, Scope* currentScope)
 
 Bool isVariableDeclaredInScope(char* varName, Scope* currentScope)
 {
-	if(currentScope)
-	{
-		if(isVariableInMatrix(varName,currentScope->matrix)== TRUE)
-				return TRUE;
-		/*else
-            currentScope=currentScope->upperScope;
-*/
-	}
+	if(currentScope) {
+        if (isVariableInMatrix(varName, currentScope->matrix) == TRUE)
+            return TRUE;
+        else
+            return FALSE;
+    }
+
 	return FALSE;
 
 }

@@ -104,7 +104,9 @@ Bool isVariableInMatrix(char* name, matrixElement* head){
     while(current)
         {
             if(strcmp(name,current->name)==0 && current->isFunc==FALSE)
+            {
                 return TRUE;
+            }
 
             current = current->next;
         }

@@ -1,26 +1,28 @@
-int boo(int t){
+int boo(char t){
 	int ttt = 2+1;
 }
 int foo(int x, int y, int z,int asd){
-	int t = x+1;
-	int ttt = x+1;
 
+	int p = 'a';
+	//char ttt = t+5+1;
+	//return t;
 	}
 
-int main()
+void main()
 {
+	/*int x;
+
+	//int x = 1;
 
 
-	int x;
-
-	char ff = 1*boo('a')+foo(2,boo(1+2),3,4)*5;
+	char ff = 1*x;
 
 	int too(char tt){
 		int y = 1;
 	}
+	return boo('b');
 
-
-
+*/
 
 }
 

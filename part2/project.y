@@ -87,9 +87,9 @@ user_function
 
 line_statement
 	: declaration { $$ = mknode("DECLARATION", $1, NULL, 0,$1->type); }  
-	| declarator_initialization ';' { $$ = mknode("DECLARATION_INIT", $1, NULL,0,UNTYPED); }  
+	| declarator_initialization ';' { $$ = mknode("DECLARATION_INIT", $1, NULL,0,$1->type); }
 	| RETURN ';' { $$ = mknode("return", NULL, NULL,1,UNTYPED); } 
-	| RETURN expression ';' { $$ = mknode("return", $2, NULL, 1,UNTYPED); }  
+	| RETURN expression ';' { $$ = mknode("return", $2, NULL, 1,$2->type); }
 	| function_call ';' { $$ = mknode("function_call", $1, NULL,0,UNTYPED); }
 	;
 
@@ -233,7 +233,7 @@ function_call_parameters_list
 
 list_of_declarators
 	: declarator_initialization 
-		{ $$ = mknode("DECLARATION_INIT", $1, NULL, 0,$1->type); }
+		{ $$ = mknode("DECLARATION_INIT", $1, NULL, 0,UNTYPED); }
 	| declarator_initialization ',' list_of_declarators 
 		{ $$ = mknode($1->token, $1, $3, 0,$1->type); }
 	;
@@ -242,7 +242,7 @@ declarator_initialization
 	: declarator ASSIGNMENT initializator 
 		{ $$ = mknode("DECL_INIT", $1, $3, 1,$3->type); }
 	| declarator 
-		{ $$ = mknode("DECL", $1, NULL, 0,$1->type); }
+		{ $$ = mknode("DECL", $1, NULL, 0,UNTYPED); }
 	;
 
 
@@ -261,7 +261,7 @@ complex_expression
 
              }
 	| operator complex_expression 
-		{ $$ = mknode("complex_expressioncomplex_expression", NULL, $2, 1,$2->type); }
+		{ $$ = mknode("complex_expression", NULL, $2, 1,$2->type); }
 	
 	;
 
@@ -316,9 +316,9 @@ literals
 declarator
 	: ID { $$ = mknode("ID", $1, NULL, 0,UNTYPED); }
 	| declarator '[' ']' 
-		{ $$ = mknode("ARRAY", $1, mknode("[]", NULL,  NULL, 1,UNTYPED),0,UNTYPED); }
+		{ $$ = mknode("ARRAY", $1, NULL,0,UNTYPED); }
 	| declarator '[' array_size ']'  
-		{ $$ = mknode("ID-ARRAY[size]", $1,  mknode("[", $3,  mknode("]", NULL,  NULL, 1,UNTYPED), 1,UNTYPED), 0,UNTYPED); }
+		{ $$ = mknode("ID-ARRAY[size]", $1,  $3, 0,UNTYPED); }
 	| bitwise_operators ID 
 		{ $$ = mknode("BIT_OP", $1,  $2, 0,UNTYPED); }
 	;
