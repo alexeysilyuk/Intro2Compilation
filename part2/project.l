@@ -54,7 +54,6 @@ true|false 		{ yylval.string = strdup(yytext); return BOOL_CONSTANT_VALUE; };
 "\""([\\\?!.,/@#$%^&*+=-_<>`~]|{LETTER}|{DIG}|{WHITESPACE})*"\"" {yylval.string = strdup(yytext); return STRING_VALUE;};
 "\'"([\\\ ?!.,/@#$%^&*\n+=-_<>`~]|{LETTER}|{DIG})"\'"	{yylval.string = strdup(yytext); return CHAR_LITERAL;};
 
-'&'{HEXPREF}{HEX}+	return POINTER_ADDRESS;
 
 
 ";"|","|"|"|"{"|"}"|"["|"]" return yytext[0];

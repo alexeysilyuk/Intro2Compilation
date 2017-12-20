@@ -1,28 +1,13 @@
-int boo(char t){
-	int ttt = 2+1;
-}
-int foo(int x, int y, int z,int asd){
-
-	int p = 'a';
-	//char ttt = t+5+1;
-	//return t;
-	}
 
 void main()
 {
-	/*int x;
+	charp x;
+	string y[10];
+char z;
+	y = "foobar";
+	x = &y[5];
+	//z = ^(x - 5);
 
-	//int x = 1;
-
-
-	char ff = 1*x;
-
-	int too(char tt){
-		int y = 1;
-	}
-	return boo('b');
-
-*/
 
 }
 

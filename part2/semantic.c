@@ -27,6 +27,8 @@ void funcCallParamsListTyping(node* tree,Scope* globalScope);
 void function_call(node* tree);
 void parseReturnStatementType(node* tree,Scope* scope,Type* type);
 Type getIDName(node* tree,Scope* scope);
+void initialization(node* tree,  Scope* scope, Type type, decl_init_flag flag);
+void checkXORStatement(node* tree,Scope* scope);
 //void printParamList(paramElem* head);
 
 Scope* globalScope ;
@@ -136,18 +138,17 @@ void createScopes(node *tree,Scope * globalScope){
 		}
 
 
-//    if(strcmp("DECLARATION_INIT",tree->token)==0){
-//        Type varType = getIDName(tree,globalScope);
-//        node *subTree = tree;
-//        declaration(subTree,globalScope,varType);
-//        printf("DECLARATION_INIT %d\n",varType);
-//
-//    }
+
 
     if(strcmp("DECLARATION",tree->token)==0)
     {
         node *subTree = tree;
         declaration(subTree,globalScope,subTree->type);
+    }
+
+    if(strcmp("DECL_INIT",tree->token)==0){
+        node *subTree = tree;
+        initialization(subTree,globalScope,UNTYPED,Initialization);
     }
 
 
@@ -165,6 +166,15 @@ void createScopes(node *tree,Scope * globalScope){
             exit(ERROR);
         }
 
+    }
+
+    if(strcmp("return-void",tree->token)==0){
+        Type funcDeclaredType = getFuncTypeMatrix(globalScope->name, globalScope->upperScope->matrix);
+        if(funcDeclaredType!=VOID_TYPE)
+        {
+            printf("\'return ;\' can be used only for VOID functions\n");
+            exit(ERROR);
+        }
     }
     if(strcmp("params_types_list",tree->token)==0)
     {
@@ -214,7 +224,19 @@ void createScopes(node *tree,Scope * globalScope){
         funcCallParamsListTyping(tree,globalScope);
     }
 
+    if(strcmp("ARRAY_SIZE",tree->token)==0)
+    {
+        if(tree->left)
+        {
+            complexExprTyping(tree->left,0,globalScope);
+            tree->type = checkType(tree->left);
+            if(tree->type != INT_TYPE){
+                printf("%s : array size may be only INT type\n",symantic_error);
+                exit(ERROR);
+            }
 
+        }
+    }
 
 
 	if(strcmp("}",tree->token)==0)
@@ -269,20 +291,6 @@ void declaration(node* tree,  Scope* scope, Type type) {
         function_call(tree);
     }
 
-
-
-    if(strcmp("DECL_INIT",tree->token)==0){
-        printf("TYPE : %d\n",type);
-        complexExprTyping(tree->right,0,scope);
-
-        if(type!=tree->right->type)
-        {
-            printf("Can't assign result with type %d to variable with %d type\n", tree->right->type,type);
-
-            //printTree(tree->left,0);
-            }
-    }
-
     if(strcmp(tree->token,"ID")==0)
     {
         if(isVariableDeclaredInScope(tree->left->token,scope)==FALSE)
@@ -295,7 +303,18 @@ void declaration(node* tree,  Scope* scope, Type type) {
             printf("Variable %s is already exists\n", tree->left->token);
             exit(ERROR);
         }
-			}
+    }
+
+    if(strcmp("DECL_INIT",tree->token)==0){
+        tree->type = type;
+        initialization(tree,scope,type,Declaration);
+    }
+
+    if(strcmp("ID-ARRAY[size]",tree->token)==0 && type != STRING_TYPE)
+    {
+        printf("[] may be used only for STRING type\n");
+        exit(ERROR);
+    }
 
     if (tree->left)
 				   declaration(tree->left,scope,type);
@@ -319,6 +338,28 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
         function_call(tree);
     }
 
+    if(strcmp("&",tree->token)==0)
+    {
+        tree->type = BITWISE_AND;
+
+    }
+
+    if(strcmp("^",tree->token)==0)
+    {
+        tree->type = BITWISE_XOR;
+        checkXORStatement(tree,scope);
+        printTree(tree,0);
+
+    }
+
+
+
+    if(strcmp("EXPR_ID[]",tree->token)==0){
+        tree->type = getIDName(tree,scope);
+        printTree(tree,0);
+    }
+
+
     if(tree->type == ID_TYPE) {
         Type type;
 
@@ -331,6 +372,7 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
             tree->type = type;
         }
         else {
+
             printf("%s : %s %s\n", symantic_error, tree->token, error_text[UNDECLARED]);
             exit(UNDECLARED);
         }
@@ -339,10 +381,14 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
 
     tree->type = checkType(tree);
 
-
 }
 
-
+void checkXORStatement(node* tree,Scope* scope){
+    if(strcmp("complex_expression",tree->token)==0)
+    {
+        complexExprTyping(tree,0,scope);
+    }
+}
 
 
 
@@ -350,14 +396,41 @@ Type checkType(node* tree){
 
     if(tree->left&&tree->right)
     {
-        
+
         if(tree->left->type== INT_TYPE && tree->right->type == INT_TYPE )
             return INT_TYPE;
+
         if (tree->left->type== BOOLEAN_TYPE && tree->right->type == BOOLEAN_TYPE)
             return BOOLEAN_TYPE;
 
+        if(tree->left->type== BITWISE_XOR && tree->right->type == INTP_TYPE)
+            return INT_TYPE;
 
-        printf("%s : %s!\n",symantic_error,error_text[INCOMPATIBLE_TYPES]);
+        if(tree->left->type== BITWISE_XOR && tree->right->type == CHARP_TYPE)
+            return CHAR_TYPE;
+
+        if(tree->left->type== BITWISE_AND && tree->right->type == CHAR_TYPE)
+            return CHARP_TYPE;
+
+        if(tree->left->type== BITWISE_AND && tree->right->type == INT_TYPE)
+            return INTP_TYPE;
+
+        if(tree->left->type== BITWISE_AND && tree->right->type == STRING_TYPE)
+            return CHARP_TYPE;
+
+        if(tree->left->type== CHAR_TYPE && tree->right->type == NULL_TYPE)
+            return CHAR_TYPE;
+
+        if(tree->left->type== INTP_TYPE && tree->right->type == NULL_TYPE)
+            return INTP_TYPE;
+
+
+
+        if(tree->left->type == STRING_TYPE && tree->right->type == INT_TYPE && strcmp(tree->token,"EXPR_ID[]")==0)
+            return CHAR_TYPE;
+
+
+        printf("%s : %s! %d|%d\n",symantic_error,error_text[INCOMPATIBLE_TYPES],tree->left->type,tree->right->type);
         exit(INCOMPATIBLE_TYPES);
 
 
@@ -537,11 +610,10 @@ void parseReturnStatementType(node* tree,Scope* scope,Type* type){
 Type getIDName(node* tree,Scope* scope){
 
         if(tree->type == ID_TYPE) {
-            Type type;
+
 
             if (isVariableDeclaredInScope(tree->token, scope) == TRUE) {
-                type = getVarTypeScope(tree->token, scope);
-                return type;
+                return getVarTypeScope(tree->token, scope);;
             }
             else {
                 printf("%s : %s %s\n", symantic_error, tree->token, error_text[UNDECLARED]);
@@ -550,13 +622,38 @@ Type getIDName(node* tree,Scope* scope){
 
         }
 
-
-
         if(tree->left)
             getIDName(tree->left,scope);
-        if(tree->right)
+       /* if(tree->right)
             getIDName(tree->right,scope);
-
+*/
 
 
     }
+
+void initialization(node* tree,  Scope* scope, Type type, decl_init_flag flag) {
+
+    if (flag == Initialization) {
+        type = getIDName(tree->left, scope);
+    }
+
+
+    tree->type = type;
+    printTree(tree,0);
+    complexExprTyping(tree->right, 0, scope);
+
+
+    if((type==CHARP_TYPE || type == INTP_TYPE) && tree->right->type == NULL_TYPE)
+        return;
+    else if((type==STRING_TYPE || type ==CHAR_TYPE) && tree->right->type == CHAR_TYPE)
+        return;
+    else if (type != tree->right->type) {
+        printf("Can't assign result with type %d to variable with %d type\n", tree->right->type, type);
+        exit(ERROR);
+    }
+
+//    if(tree->left)
+
+
+
+}

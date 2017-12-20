@@ -3,9 +3,10 @@
 #include <stdlib.h>
 
 
-typedef enum type {ERROR=-2, UNTYPED=-1,BOOLEAN_TYPE=0, CHAR_TYPE=1, INT_TYPE=2, STRING_TYPE=3, CHARP_TYPE=4, INTP_TYPE=5, BIN_TYPE=6,OCT_TYPE=7,HEX_TYPE=8, VOID_TYPE=9, ID_TYPE=10 } Type;
+typedef enum type {ERROR=-2, UNTYPED=-1,BOOLEAN_TYPE=0, CHAR_TYPE=1, INT_TYPE=2, STRING_TYPE=3, CHARP_TYPE=4, INTP_TYPE=5, BIN_TYPE=6,OCT_TYPE=7,HEX_TYPE=8, VOID_TYPE=9, ID_TYPE=10, BITWISE_XOR=11,BITWISE_AND=12, NULL_TYPE=13 } Type;
 typedef enum error_codes {UNDECLARED,USING_UNDECLARED_VARIABLE,INCOMPATIBLE_TYPES,USING_UNDECLARED_FUNCTION, MAIN_REDECLARATION} error_codes;
-char* symantic_error = "Symantic Error";
+typedef enum decl_init_flag{Declaration, Initialization} decl_init_flag;
+char* symantic_error = "Semantic Error";
 char* error_text[] ={"Undeclared","Using undeclared variable",
               "Incompatible types", "Using undeclared function",
                      "Main function is already declared in program!"

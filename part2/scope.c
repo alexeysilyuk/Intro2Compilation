@@ -110,7 +110,9 @@ Type getVarTypeScope(char* varName, Scope* currentScope)
     {
         type = getVarTypeMatrix(varName,currentScope->matrix);
         if(type!=UNTYPED)
+        {
             return type;
+        }
         else
             currentScope=currentScope->upperScope;
 

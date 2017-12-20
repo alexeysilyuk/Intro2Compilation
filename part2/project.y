@@ -39,7 +39,7 @@ node* mknode (char* token, node* left, node* right, int printHeader, Type type);
 %type <node> for_block_inits for_block_single_init for_block_inits_update for_block_boolean_expr boolean_expr
 %type <node> boolean_expr_complex boolean_expr_simple bool_binary_op bool_unary_op user_function function_call
 %type <node> function_call_parameters_list  list_of_declarators declarator_initialization initializator complex_expression
-%type <node> basic_expression integer  terminal_const_values literals declarator params_types_list
+%type <node> basic_expression  terminal_const_values literals declarator params_types_list
 %type <node> array_size  type operator bitwise_operators expression other ID lp rp inc_dec 
 %%
 
@@ -88,7 +88,7 @@ user_function
 line_statement
 	: declaration { $$ = mknode("DECLARATION", $1, NULL, 0,$1->type); }  
 	| declarator_initialization ';' { $$ = mknode("DECLARATION_INIT", $1, NULL,0,$1->type); }
-	| RETURN ';' { $$ = mknode("return", NULL, NULL,1,UNTYPED); } 
+	| RETURN ';' { $$ = mknode("return-void", NULL, NULL,1,UNTYPED); }
 	| RETURN expression ';' { $$ = mknode("return", $2, NULL, 1,$2->type); }
 	| function_call ';' { $$ = mknode("function_call", $1, NULL,0,UNTYPED); }
 	;
@@ -197,7 +197,7 @@ boolean_expr_complex
 
 boolean_expr_simple
 		: complex_expression { $$ = mknode("complex_expression", $1, NULL,1,$1->type); }
-		| other  { $$ = mknode("OTHER", $1, NULL,0,UNTYPED); }
+		| other  { $$ = mknode("OTHER", $1, NULL,0,$1->type); }
 		;
 
 bool_binary_op
@@ -233,14 +233,14 @@ function_call_parameters_list
 
 list_of_declarators
 	: declarator_initialization 
-		{ $$ = mknode("DECLARATION_INIT", $1, NULL, 0,UNTYPED); }
+		{ $$ = mknode("DECLARATION_INIT", $1, NULL, 0,$1->type); }
 	| declarator_initialization ',' list_of_declarators 
 		{ $$ = mknode($1->token, $1, $3, 0,$1->type); }
 	;
 
 declarator_initialization
 	: declarator ASSIGNMENT initializator 
-		{ $$ = mknode("DECL_INIT", $1, $3, 1,$3->type); }
+		{ $$ = mknode("DECL_INIT", $1, $3, 1,UNTYPED); }
 	| declarator 
 		{ $$ = mknode("DECL", $1, NULL, 0,UNTYPED); }
 	;
@@ -270,9 +270,8 @@ basic_expression
 		{ $$ = mknode("function_call", $1,  NULL,0,UNTYPED); }
 	| terminal_const_values
 		{ $$ = mknode($1->token, $1, NULL,0,$1->type); }
-	| ID '[' integer ']' 
-		{ $$ = mknode("EXPR_ID[]", mknode($1->token,NULL,mknode("[",mknode($3->token,NULL,NULL,1,UNTYPED),NULL,1,UNTYPED),0,UNTYPED),
-			mknode("]",NULL,NULL,1,UNTYPED),1,UNTYPED);
+	| ID '[' array_size ']'
+		{ $$ = mknode("EXPR_ID[]", $1, $3,0,UNTYPED);
 		 } 
 	| ID 
 		{ $$ = mknode("EXPR_ID", $1, NULL, 1,UNTYPED); }
@@ -284,8 +283,7 @@ basic_expression
 		{ $$ = mknode("bitwise_operator", $1, $2, 0,UNTYPED); } 
 	;
  
-integer
-	: INT_CONSTANT_VALUE { $$ = mknode(yytext,NULL,NULL,1,INT_TYPE);};
+
 
 /*
 parameters_list
@@ -360,15 +358,15 @@ operator
 	;
 
 bitwise_operators
-	: BITWISE_AND { $$ = mknode($1, NULL, NULL, 1,UNTYPED); }
-	| BITWISE_XOR { $$ = mknode($1, NULL, NULL, 1,UNTYPED); }
+	: BITWISE_AND { $$ = mknode($1, NULL, NULL, 1,BITWISE_AND); }
+	| BITWISE_XOR { $$ = mknode($1, NULL, NULL, 1,BITWISE_XOR); }
 	;
 
 
 
 other
 	: RETURN { $$ = mknode($1, NULL, NULL, 1,UNTYPED); }
-	| _NULL  { $$ = mknode($1, NULL, NULL, 1,UNTYPED); }
+	| _NULL  { $$ = mknode($1, NULL, NULL, 1,NULL_TYPE); }
 	;
 
 lp
