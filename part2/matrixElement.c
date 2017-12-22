@@ -93,10 +93,14 @@ Bool isFuncInMatrix(char* name, matrixElement* head){
     while(current)
         {
             if(strcmp(name,current->name)==0 && current->isFunc==TRUE)
+            {
+                //printf("in 1\n");
                 return TRUE;
-
+            }
+            //printf("%s 555\n",current->name);
             current = current->next;
         }
+        //printf("in 2\n");
         return FALSE;
 }
 

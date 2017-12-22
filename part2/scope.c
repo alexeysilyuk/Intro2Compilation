@@ -13,7 +13,7 @@ typedef struct Scope
     Bool isFunction;
     struct Scope* upperScope;
     matrixElement* matrix;
-    //paramElem* scopeParamsList;
+    Bool isScopeClosed;
 
 } Scope;
 
@@ -33,16 +33,14 @@ Scope* createScope(char* name, Type returnType, Scope* upperScope, Bool isFuncti
     newScope->matrix = matrixHead;
     newScope->returnType=returnType;
     newScope->isFunction = isFunction;
-
+    newScope->isScopeClosed=FALSE;
     newScope->upperScope=upperScope;
-
     return newScope;
 }
 
 
 Scope* prependScope(char* name, Type returnType, Scope* upperScope, Bool isFunction)
 {
-    //printf("PUSH %s : %d\n",name,returnType);
     Scope* scope = createScope(name,returnType,upperScope,isFunction);
     upperScope = scope;
     return upperScope;
@@ -65,13 +63,15 @@ Scope* popScope(Scope* head)
 
 Bool isFuncDeclaredInScope(char* funcName, Scope* currentScope)
 {
+//    printf("seek %s in %s\n",funcName,currentScope->name);
 	while(currentScope)
 	{
 		if(isFuncInMatrix(funcName,currentScope->matrix)== TRUE)
-				return TRUE;
+        {
+            return TRUE;
+        }
 		else
-			currentScope=currentScope->upperScope;
-
+            currentScope=currentScope->upperScope;
 	}
 	return FALSE;
 	
@@ -91,13 +91,16 @@ Bool isFuncDeclaredInCurrentScope(char* funcName, Scope* currentScope)
 
 Bool isVariableDeclaredInScope(char* varName, Scope* currentScope)
 {
-	if(currentScope) {
-        if (isVariableInMatrix(varName, currentScope->matrix) == TRUE)
-            return TRUE;
-        else
-            return FALSE;
+    while(currentScope) {
+        if (currentScope->isFunction == TRUE) {
+            if (isVariableInMatrix(varName, currentScope->matrix) == TRUE)
+                return TRUE;
+            else
+                return FALSE;
+        }
+        if (currentScope->isFunction == FALSE)
+            currentScope=currentScope->upperScope;
     }
-
 	return FALSE;
 
 }

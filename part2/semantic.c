@@ -22,13 +22,18 @@ void complexExprTyping(node* tree, int space, Scope* scope);
 void findVarsInParamList(node* tree, Scope* scope, matrixElement* matrix);
 int funcCallParamsCount(node* tree);
 Bool isAmountOfParamsCompare(Scope* scope, char* funcName, int paramsAmount,Type* compareParamsList);
-void checkMainCorrectness();
+void checkMainCorrectness(Scope*);
 void funcCallParamsListTyping(node* tree,Scope* globalScope);
-void function_call(node* tree);
+void function_call(node* tree, Scope * scope);
 void parseReturnStatementType(node* tree,Scope* scope,Type* type);
 Type getIDName(node* tree,Scope* scope);
 void initialization(node* tree,  Scope* scope, Type type, decl_init_flag flag);
 void checkXORStatement(node* tree,Scope* scope);
+void booleanExprTyping(node* tree, Scope* scope);
+void ifBlockParsing(node* tree, Scope* scope);
+void whileBlockParsing(node* tree, Scope* scope);
+void doWhileBlockParsing(node* tree, Scope* scope);
+void forBlockParsing(node* tree, Scope* scope);
 //void printParamList(paramElem* head);
 
 Scope* globalScope ;
@@ -97,11 +102,11 @@ void runSemantic(node* tree){
     isMainDeclared=FALSE;
 	//printTree(tree,0);
 	globalScope= createScope("GLOBAL",UNTYPED,NULL,FALSE);
-
+    globalScope->isScopeClosed=TRUE;
 	//updateNodesNype(tree);
 
 	createScopes(tree,globalScope);
-    checkMainCorrectness();
+    checkMainCorrectness(globalScope);
     printf("\n\t\t------ GLOBAL ------\n");
 	//printScope(globalScope);
 
@@ -113,10 +118,10 @@ void runSemantic(node* tree){
 
 void createScopes(node *tree,Scope * globalScope){
 
-	if(strcmp("FUNCTION_DECLARATION",tree->token)==0)
+	if(strcmp("USER_FUNCTION",tree->token)==0)
 		{
 			// add parameters list adding to matrix table
-            if(strcmp("main", tree->left->left->token)==0) {
+            if(strcmp("main", tree->left->token)==0) {
                 if (isMainDeclared == FALSE) {
                     isMainDeclared = TRUE;
                 }
@@ -125,16 +130,15 @@ void createScopes(node *tree,Scope * globalScope){
                     exit(MAIN_REDECLARATION);
                 }
             }
-            if(isFuncDeclaredInCurrentScope(tree->left->left->token,globalScope)==TRUE)
+
+            if(isFuncDeclaredInCurrentScope(tree->left->token,globalScope)==TRUE)
             {
-                printf("Function %s is already declared in this scope\n",tree->left->left->token);
+                printf("Function %s is already declared in this scope\n",tree->left->token);
                 exit(ERROR);
             }
-            globalScope->matrix = prependMatrixElement(globalScope->matrix,tree->left->left->token,tree->left->type,"-",TRUE,0);
-            globalScope = prependScope(tree->left->left->token,tree->left->type,globalScope,TRUE);
 
-            //printMatrix(globalScope->matrix);
-
+            globalScope->matrix = prependMatrixElement(globalScope->matrix,tree->left->token,tree->left->type,"-",TRUE,0);
+            globalScope = prependScope(tree->left->token,tree->left->type,globalScope,TRUE);
 		}
 
 
@@ -143,6 +147,7 @@ void createScopes(node *tree,Scope * globalScope){
     if(strcmp("DECLARATION",tree->token)==0)
     {
         node *subTree = tree;
+
         declaration(subTree,globalScope,subTree->type);
     }
 
@@ -155,9 +160,19 @@ void createScopes(node *tree,Scope * globalScope){
     if(strcmp(tree->token,"return")==0){
         Type* returnType = (Type*)malloc(sizeof(Type));
         parseReturnStatementType(tree,globalScope,returnType);
-        Type funcDeclaredType = getFuncTypeMatrix(globalScope->name, globalScope->upperScope->matrix);
+
+        Type funcDeclaredType;
+        if(strcmp(globalScope->name,"BLOCK")==0)
+            funcDeclaredType = globalScope->returnType;
+        else
+        {
+            funcDeclaredType= getFuncTypeMatrix(globalScope->name, globalScope->upperScope->matrix);
+            globalScope->isScopeClosed = TRUE;
+        }
+
+
         if(funcDeclaredType != *returnType){
-            printf("Function \'%s\' return type different from function type\n",globalScope->name);
+            printf("Function \'%s\' return type different from function type %d | %d\n",globalScope->name,funcDeclaredType,*returnType);
             exit(ERROR);
         }
         if(*returnType==STRING_TYPE)
@@ -165,61 +180,59 @@ void createScopes(node *tree,Scope * globalScope){
             printf("Function \'%s\' return type can't be STRING\n",globalScope->name);
             exit(ERROR);
         }
+        //globalScope->isScopeClosed == TRUE;
 
     }
 
     if(strcmp("return-void",tree->token)==0){
-        Type funcDeclaredType = getFuncTypeMatrix(globalScope->name, globalScope->upperScope->matrix);
-        if(funcDeclaredType!=VOID_TYPE)
+        printf("return void for %s\n",globalScope->name);
+        globalScope->isScopeClosed = TRUE;
+        if(globalScope->returnType!=VOID_TYPE)
         {
             printf("\'return ;\' can be used only for VOID functions\n");
             exit(ERROR);
         }
+
     }
     if(strcmp("params_types_list",tree->token)==0)
     {
         int params = binarytree_count(tree,"TYPE");
         globalScope->upperScope->matrix->paramsAmount = params;
-        //printf("%s have %d params\n",globalScope->name,params);
         findVarsInParamList(tree->right,globalScope,globalScope->upperScope->matrix);
 
     }
 
 
-//	if(strcmp("BLOCK",tree->token)==0)
-//		globalScope = prependScope("(BLOCK",UNTYPED,globalScope,FALSE);
+	if(strcmp("BLOCK",tree->token)==0)
+    {
+        globalScope = prependScope("BLOCK",globalScope->returnType,globalScope,FALSE);
+
+    }
 
 
-
-
-
-    /*if(strcmp("function_call",tree->token)==0)
+    if(strcmp("(IF",tree->token)==0)
     {
 
-        if (isFuncDeclaredInScope(tree->left->token, globalScope) == TRUE) {
-            Type type = getFuncTypeScope(tree->left->token, globalScope);
-            tree->type = type;
-
-            Type* typesArray = (Type*)malloc(10* sizeof(Type));
-            int params = funcCallCountParams(tree->left,typesArray,0);
-
-            if(isAmountOfParamsCompare(globalScope,tree->left->token,params,typesArray) == FALSE){
-                printf("function %s have incorrect amount of parameters!\n",tree->left->token);
-                exit(ERROR);
-            }
-            //funcCallParamsCount(tree);
-            //if(tree->right)
-            //funcCallParamsCount(tree);
-
-
-        }
-        else
-        {
-            printf("%s : function \'%s\' %s\n", symantic_error, tree->left->left->token,error_text[UNDECLARED]);
-            exit(UNDECLARED);
-        }
+        ifBlockParsing(tree,globalScope);
     }
-*/
+
+    if(strcmp("(WHILE",tree->token)==0)
+    {
+        whileBlockParsing(tree,globalScope);
+    }
+
+    if(strcmp("(DO_WHILE",tree->token)==0) {
+        doWhileBlockParsing(tree,globalScope);
+    }
+
+    if(strcmp("(FOR",tree->token)==0)
+        forBlockParsing(tree,globalScope);
+
+    if(strcmp("function_call",tree->token)==0)
+    {
+        function_call(tree,globalScope);
+    }
+
     if(strcmp("FUNC_PARAM",tree->token)==0){
         funcCallParamsListTyping(tree,globalScope);
     }
@@ -242,9 +255,22 @@ void createScopes(node *tree,Scope * globalScope){
 	if(strcmp("}",tree->token)==0)
 		{
 
-			//printScope(globalScope);
-			popScope(globalScope);
-            //printMatrix(globalScope->matrix);
+            if(globalScope->isFunction)
+            {
+                if(globalScope->isScopeClosed == TRUE)
+                {
+                    printf("pop %s\n",globalScope->name);
+                    popScope(globalScope);
+                }
+                else
+                {
+                    printf("Scope %s not closed!\n",globalScope->name);
+                    exit(ERROR);
+                }
+
+            }
+            else
+                popScope(globalScope);
 		}
 
 			
@@ -283,16 +309,35 @@ void printTree(node* tree, int space) {
 	}
 
 
+void printFullTree(node* tree, int space) {
+    int i;
+
+        for (i= 0; i< space; i++)
+        { printf("   "); }
+        printf("%s | %d\n", tree->token,tree->type);
+
+        space++;
+
+        if (tree->left)
+        {   printTree(tree->left, space);  }
+        if (tree->right)
+        {   printTree(tree->right, space);}
+
+
+}
+
 
 void declaration(node* tree,  Scope* scope, Type type) {
 
     if(strcmp("function_call",tree->token)==0)
     {
-        function_call(tree);
+        function_call(tree,scope);
+
     }
 
     if(strcmp(tree->token,"ID")==0)
     {
+
         if(isVariableDeclaredInScope(tree->left->token,scope)==FALSE)
         {
             //printf("var %s added with type %d\n",tree->left->token,type);
@@ -306,6 +351,7 @@ void declaration(node* tree,  Scope* scope, Type type) {
     }
 
     if(strcmp("DECL_INIT",tree->token)==0){
+
         tree->type = type;
         initialization(tree,scope,type,Declaration);
     }
@@ -333,41 +379,47 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
         complexExprTyping(tree->left, space,scope);
 
 
+    if(strcmp("|ID|",tree->token)==0)
+    {
+
+        if(tree->left)
+        {
+            if(tree->left->type==INT_TYPE || tree->left->type == STRING_TYPE)
+            {
+                tree->type = INT_TYPE;
+                tree->left->type = INT_TYPE;
+            }
+
+            else
+                printf("|%s| must be STRING or INTEGER type\n",tree->left->token);
+        }
+    }
+
     if(strcmp("function_call",tree->token)==0)
     {
-        function_call(tree);
+        function_call(tree,scope);
+        return;
     }
 
     if(strcmp("&",tree->token)==0)
     {
         tree->type = BITWISE_AND;
-
     }
 
     if(strcmp("^",tree->token)==0)
     {
         tree->type = BITWISE_XOR;
-        //checkXORStatement(tree,scope);
-        //printTree(tree,0);
-
-    }
-    if(strcmp("bitwise_operator",tree->token)==0)
-    {
-        //tree->type = BITWISE_XOR;
-        checkXORStatement(tree,scope);
-        printTree(tree,0);
-
     }
 
-
-
+    
     if(strcmp("EXPR_ID[]",tree->token)==0){
         tree->type = getIDName(tree,scope);
-        //printTree(tree,0);
+        //
     }
 
 
     if(tree->type == ID_TYPE) {
+
         Type type;
 
         if (isVariableDeclaredInScope(tree->token, scope) == TRUE) {
@@ -390,12 +442,6 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
 
 }
 
-void checkXORStatement(node* tree,Scope* scope){
-    if(strcmp("complex_expression",tree->token)==0)
-    {
-        complexExprTyping(tree,0,scope);
-    }
-}
 
 
 
@@ -403,6 +449,9 @@ Type checkType(node* tree){
 
     if(tree->left&&tree->right)
     {
+        if(tree->left->type == tree->right->type)
+            return tree->left->type;
+
 
         if(tree->left->type== INT_TYPE && tree->right->type == INT_TYPE )
             return INT_TYPE;
@@ -443,7 +492,6 @@ Type checkType(node* tree){
         if(tree->left->type == INT_TYPE && tree->right->type== CHARP_TYPE)
             return CHARP_TYPE;
 
-
         if(tree->left->type == STRING_TYPE && tree->right->type == INT_TYPE && strcmp(tree->token,"EXPR_ID[]")==0)
             return CHAR_TYPE;
 
@@ -456,6 +504,9 @@ Type checkType(node* tree){
 
     if(tree->left)
         return tree->left->type;
+
+    if(!tree->left && tree->right)
+        return tree->right->type;
 
 
     return tree->type;
@@ -538,20 +589,20 @@ Bool isAmountOfParamsCompare(Scope* scope, char* funcName, int paramsAmount,Type
 
 
 
-void checkMainCorrectness(){
+void checkMainCorrectness(Scope *scope){
     if(isMainDeclared==FALSE){
         printf("Program must have \'main\' function!\n");
         exit(ERROR);
     }
-    while(globalScope->matrix){
-        if(strcmp("main", globalScope->matrix->name)==0 && globalScope->matrix->isFunc==TRUE){
+    while(scope->matrix){
+        if(strcmp("main", scope->matrix->name)==0 && scope->matrix->isFunc==TRUE){
             if(globalScope->matrix->paramsAmount!=0)
             {
                 printf("Main function can not have parameters!\n");
                 exit(ERROR);
             }
         }
-        globalScope->matrix = globalScope->matrix->next;
+        scope->matrix = scope->matrix->next;
     }
 }
 
@@ -571,15 +622,17 @@ void funcCallParamsListTyping(node* tree,Scope* scope){
 
 }
 
-void function_call(node* tree){
-    if (isFuncDeclaredInScope(tree->left->token, globalScope) == TRUE) {
-        Type type = getFuncTypeScope(tree->left->token, globalScope);
+void function_call(node* tree, Scope* scope){
+
+    if (isFuncDeclaredInScope(tree->left->token, scope) == TRUE) {
+
+        Type type = getFuncTypeScope(tree->left->token, scope);
         tree->type = type;
 
         Type* typesArray = (Type*)malloc(10* sizeof(Type));
         int params = funcCallCountParams(tree->left,typesArray,0);
 
-        if(isAmountOfParamsCompare(globalScope,tree->left->token,params,typesArray) == FALSE){
+        if(isAmountOfParamsCompare(scope,tree->left->token,params,typesArray) == FALSE){
             printf("function %s have incorrect amount of parameters!\n",tree->left->token);
             exit(ERROR);
         }
@@ -587,7 +640,12 @@ void function_call(node* tree){
     }
     else
     {
-        printf("%s : function \'%s\' %s\n", symantic_error, tree->left->left->token,error_text[UNDECLARED]);
+
+        if(tree->left->left)
+            printf("%s : function \'%s\' %s\n", symantic_error, tree->left->left->token,error_text[UNDECLARED]);
+        else
+            printf("%s : function \'%s\' %s\n", symantic_error, tree->left->token,error_text[UNDECLARED]);
+
         exit(UNDECLARED);
     }
 }
@@ -631,9 +689,17 @@ Type getIDName(node* tree,Scope* scope){
 
 
             if (isVariableDeclaredInScope(tree->token, scope) == TRUE) {
-                return getVarTypeScope(tree->token, scope);;
+
+                return getVarTypeScope(tree->token, scope);
             }
+                else if (isFuncDeclaredInScope(tree->token,scope)==TRUE)
+            {
+
+                return getFuncTypeScope(tree->token,scope);
+            }
+
             else {
+
                 printf("%s : %s %s\n", symantic_error, tree->token, error_text[UNDECLARED]);
                 exit(UNDECLARED);
             }
@@ -655,9 +721,8 @@ void initialization(node* tree,  Scope* scope, Type type, decl_init_flag flag) {
         type = getIDName(tree->left, scope);
     }
 
-
     tree->type = type;
-    //printTree(tree,0);
+
     complexExprTyping(tree->right, 0, scope);
 
 
@@ -674,4 +739,116 @@ void initialization(node* tree,  Scope* scope, Type type, decl_init_flag flag) {
 
 
 
+}
+
+void ifBlockParsing(node* tree, Scope* scope){
+    if(tree->left->right)
+    {
+        booleanExprTyping(tree->left->right,scope);
+    }
+
+
+
+}
+
+void booleanExprTyping(node* tree, Scope* scope){
+    complexExprTyping(tree,0,scope);
+    if(strcmp("complex_expression",tree->token)==0)
+    {
+
+        complexExprTyping(tree,0,scope);
+        if(tree->left)
+            tree->type = tree->left->type;
+        if(tree->right)
+            tree->type = tree->right->type;
+    }
+
+    if(strcmp(tree->token,">")==0 ||
+            strcmp(tree->token,">=")==0 ||
+            strcmp(tree->token,"<")==0 ||
+            strcmp(tree->token,"<=")==0)
+    {
+        if(tree->left->type != INT_TYPE || tree->right->type!=INT_TYPE)
+        {
+            printf("%s|%d - %s:%d\n",tree->left->token,tree->left->type,tree->right->token,tree->right->type);
+            printf("Operands in boolean expression must be INTEGER\n");
+            exit(ERROR);
+        }
+        else
+            tree->type = BOOLEAN_TYPE;
+    }
+
+    if(strcmp("&&",tree->token)==0 || strcmp("||",tree->token)==0)
+    {
+        complexExprTyping(tree->left,0,scope);
+        complexExprTyping(tree->right,0,scope);
+
+    }
+
+    if(strcmp("==",tree->token)==0 || strcmp("!=",tree->token)==0)
+    {
+
+        if(tree->left->type == INT_TYPE && tree->right->type==INT_TYPE ||
+           tree->left->type == BOOLEAN_TYPE && tree->right->type==BOOLEAN_TYPE ||
+           tree->left->type == CHARP_TYPE && tree->right->type==CHARP_TYPE ||
+           tree->left->type == CHAR_TYPE && tree->right->type==CHAR_TYPE ||
+           tree->left->type == INTP_TYPE && tree->right->type==INTP_TYPE)
+        {
+           tree->type = BOOLEAN_TYPE;
+        }
+        else
+        {
+            printf("Operands types on comparison expression must be equal\n");
+            exit(ERROR);
+        }
+
+
+    }
+
+    if(strcmp("!",tree->token)==0)
+    {
+        complexExprTyping(tree->right,0,scope);
+        tree->type= tree->right->type;
+
+        if(tree->right->type != BOOLEAN_TYPE)
+            printf("\'!\' Operator must receive only boolean right operand!\n");
+    }
+
+    if(tree->left)
+        booleanExprTyping(tree->left,scope);
+
+    if(tree->right)
+        booleanExprTyping(tree->right,scope);
+
+
+
+}
+
+void whileBlockParsing(node* tree, Scope* scope){
+    if(tree->left)
+    {
+        booleanExprTyping(tree->left,scope);
+    }
+}
+
+void doWhileBlockParsing(node* tree, Scope* scope){
+    if(tree->right)
+    {
+        booleanExprTyping(tree->right,scope);
+    }
+}
+
+void forBlockParsing(node* tree, Scope* scope){
+    if(strcmp("FOR_COND",tree->token)==0){
+        if(tree->right)
+        {
+            booleanExprTyping(tree->right,scope);
+        }
+    }
+
+    if(tree->left)
+        forBlockParsing(tree->left,scope);
+
+    if(tree->right)
+        forBlockParsing(tree->right,scope);
 }

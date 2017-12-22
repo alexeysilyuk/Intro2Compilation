@@ -44,7 +44,7 @@ null   { yylval.string = strdup(yytext); return _NULL;}
 true|false 		{ yylval.string = strdup(yytext); return BOOL_CONSTANT_VALUE; };
 {BIN}+"b"    		{ yylval.string = strdup(yytext); return BIN_CONSTANT_VALUE;};
 {DIGWZ}{DIG}*|0 	{ yylval.integer = atoi(yytext);  return INT_CONSTANT_VALUE;};
-'0'{OCT}*    		{ yylval.string = strdup(yytext); return OCT_CONSTANT_VALUE;};
+0{OCT}*    		{ yylval.string = strdup(yytext); return OCT_CONSTANT_VALUE;};
 {HEXPREF}{HEX}+		{ yylval.string = strdup(yytext); return HEX_CONSTANT_VALUE;};
 
 {LETTER}({LETTER}|{DIG}|[_])*  {yylval.string = strdup(yytext); return IDENTIFIER; }

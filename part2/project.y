@@ -113,7 +113,7 @@ loop_functions
 if_block
 	: IF lp boolean_expr rp line_statement  else_block 
 		{ $$ = mknode("(IF", mknode("(", $2, $3, 0,UNTYPED), mknode(")", 
-			mknode("(BLOCK",$5,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED)		
+			mknode("BLOCK",$5,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED)
 			, $6, 1,UNTYPED), 1,UNTYPED); }
 	| IF lp boolean_expr rp code_block else_block	
 		{ $$ = mknode("(IF", mknode("(", $2, $3, 0,UNTYPED), mknode("_", $5, $6, 1,UNTYPED), 1,UNTYPED); }
@@ -129,7 +129,7 @@ else_block
 
 while_block
 	: WHILE lp boolean_expr rp line_statement { $$ = mknode("(WHILE", $3, mknode(" ",$5,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED), 1,UNTYPED); }
-	| WHILE lp boolean_expr rp code_block { $$ = mknode("WHILE", $3, $5, 1,UNTYPED); }
+	| WHILE lp boolean_expr rp code_block { $$ = mknode("(WHILE", $3, $5, 1,UNTYPED); }
 	;
 
 do_while_block
@@ -140,12 +140,12 @@ do_while_block
 for_block
 	: FOR lp for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update rp
 line_statement 
-	{ $$ = mknode("FOR", 
-		mknode("FOR", mknode("FOR", $3, $5, 0,UNTYPED), $7, 0,UNTYPED), 
+	{ $$ = mknode("(FOR",
+		mknode("FOR", mknode("FOR_COND", $3, $5, 0,UNTYPED), $7, 0,UNTYPED),
 			    mknode(" ",$9,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED), 0,UNTYPED); 
 	}
-	| FOR lp for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update rp code_block 		{ $$ = mknode("FOR", 
-		mknode("FOR", mknode("FOR", $3, $5, 0,UNTYPED), $7, 0,UNTYPED), 
+	| FOR lp for_block_inits ';' for_block_boolean_expr ';' for_block_inits_update rp code_block 		{ $$ = mknode("(FOR",
+		mknode("FOR", mknode("FOR_COND", $3, $5, 0,UNTYPED), $7, 0,UNTYPED),
 			    $9, 0,UNTYPED); }
 	;
 
@@ -184,7 +184,7 @@ boolean_expr
 		: boolean_expr AND boolean_expr_complex { $$ = mknode("&&", $1,  $3, 1,BOOLEAN_TYPE); }
 		| boolean_expr OR boolean_expr_complex { $$ = mknode("||", $1,  $3, 1,BOOLEAN_TYPE); }
 		| boolean_expr_complex { $$ = mknode("BOOLEAN_EXPR", $1, NULL, 0,UNTYPED); }
-		| bool_unary_op boolean_expr_complex { $$ = mknode("!", NULL, $2, 1,BOOLEAN_TYPE); }
+		| bool_unary_op boolean_expr_complex { $$ = mknode("!", NULL, $2, 1,UNTYPED); }
 		;
 
 boolean_expr_complex
