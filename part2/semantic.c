@@ -295,7 +295,7 @@ void declaration(node* tree,  Scope* scope, Type type) {
     {
         if(isVariableDeclaredInScope(tree->left->token,scope)==FALSE)
         {
-            printf("var %s added with type %d\n",tree->left->token,type);
+            //printf("var %s added with type %d\n",tree->left->token,type);
             scope->matrix = prependMatrixElement(scope->matrix,tree->left->token,type,"-",FALSE,0);
         }
 
@@ -347,6 +347,13 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
     if(strcmp("^",tree->token)==0)
     {
         tree->type = BITWISE_XOR;
+        //checkXORStatement(tree,scope);
+        //printTree(tree,0);
+
+    }
+    if(strcmp("bitwise_operator",tree->token)==0)
+    {
+        //tree->type = BITWISE_XOR;
         checkXORStatement(tree,scope);
         printTree(tree,0);
 
@@ -356,7 +363,7 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
 
     if(strcmp("EXPR_ID[]",tree->token)==0){
         tree->type = getIDName(tree,scope);
-        printTree(tree,0);
+        //printTree(tree,0);
     }
 
 
@@ -424,6 +431,17 @@ Type checkType(node* tree){
         if(tree->left->type== INTP_TYPE && tree->right->type == NULL_TYPE)
             return INTP_TYPE;
 
+        if(tree->left->type == INTP_TYPE && tree->right->type==INT_TYPE)
+            return INTP_TYPE;
+
+        if(tree->left->type == INT_TYPE && tree->right->type==INTP_TYPE)
+            return INTP_TYPE;
+
+        if(tree->left->type == CHARP_TYPE && tree->right->type==INT_TYPE)
+            return CHARP_TYPE;
+
+        if(tree->left->type == INT_TYPE && tree->right->type== CHARP_TYPE)
+            return CHARP_TYPE;
 
 
         if(tree->left->type == STRING_TYPE && tree->right->type == INT_TYPE && strcmp(tree->token,"EXPR_ID[]")==0)
@@ -639,7 +657,7 @@ void initialization(node* tree,  Scope* scope, Type type, decl_init_flag flag) {
 
 
     tree->type = type;
-    printTree(tree,0);
+    //printTree(tree,0);
     complexExprTyping(tree->right, 0, scope);
 
 

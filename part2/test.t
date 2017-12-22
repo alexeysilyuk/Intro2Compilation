@@ -3,10 +3,10 @@ void main()
 {
 	charp x;
 	string y[10];
-char z;
+	char z;
 	y = "foobar";
 	x = &y[5];
-	//z = ^(x - 5);
+	z = ^x;
 
 
 }
