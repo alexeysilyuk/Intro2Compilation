@@ -45,7 +45,7 @@ node* mknode (char* token, node* left, node* right, int printHeader, Type type);
 
 
 
-main : program {printf("Parsing done successfully. \n"); runSemantic($1);  };
+main : program {printf("Lexical check done successfully. \n"); runSemantic($1);  };
 
 
 program
@@ -116,7 +116,7 @@ if_block
 			mknode("BLOCK",$5,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED)
 			, $6, 1,UNTYPED), 1,UNTYPED); }
 	| IF lp boolean_expr rp code_block else_block	
-		{ $$ = mknode("(IF", mknode("(", $2, $3, 0,UNTYPED), mknode("_", $5, $6, 1,UNTYPED), 1,UNTYPED); }
+		{ $$ = mknode("(IF", mknode("(", $2, $3, 0,UNTYPED), mknode("BLOCK", $5, $6, 1,UNTYPED), 1,UNTYPED); }
 	;
 
 else_block
@@ -129,12 +129,12 @@ else_block
 
 while_block
 	: WHILE lp boolean_expr rp line_statement { $$ = mknode("(WHILE", $3, mknode(" ",$5,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED), 1,UNTYPED); }
-	| WHILE lp boolean_expr rp code_block { $$ = mknode("(WHILE", $3, $5, 1,UNTYPED); }
+	| WHILE lp boolean_expr rp code_block { $$ = mknode("(WHILE", $3, mknode("BLOCK", NULL, $5, 1,UNTYPED), 1,UNTYPED); }
 	;
 
 do_while_block
 	: DO line_statement  WHILE lp boolean_expr rp ';' { $$ = mknode("(DO_WHILE", mknode(" ",$2,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED), $5, 0,UNTYPED); }
-	| DO code_block  WHILE lp boolean_expr rp ';' { $$ = mknode("(DO_WHILE", $2, $5, 0,UNTYPED); }
+	| DO code_block  WHILE lp boolean_expr rp ';' { $$ = mknode("(DO_WHILE", mknode("BLOCK", NULL, $2, 1,UNTYPED), $5, 0,UNTYPED); }
 	;
 
 for_block

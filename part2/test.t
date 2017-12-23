@@ -1,16 +1,14 @@
 
 void main(){
-	int goo(int s){
-		return 1;
-	}
+	int x;
+	int b = 1+3+x;
+	boolean boo;
 
-int x;
-	/*if(x>2){
-		x=1;
+	while(boo)	{
+		boo=false;
 		return ;
 	}
-*/
-	x = 2+goo(3);
 
-return ;
+
+	//return;
 }

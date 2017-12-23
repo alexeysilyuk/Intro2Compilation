@@ -20,7 +20,6 @@ void declaration(node* tree, Scope* scope,Type type);
 Type checkType(node* tree);
 void complexExprTyping(node* tree, int space, Scope* scope);
 void findVarsInParamList(node* tree, Scope* scope, matrixElement* matrix);
-int funcCallParamsCount(node* tree);
 Bool isAmountOfParamsCompare(Scope* scope, char* funcName, int paramsAmount,Type* compareParamsList);
 void checkMainCorrectness(Scope*);
 void funcCallParamsListTyping(node* tree,Scope* globalScope);
@@ -28,13 +27,11 @@ void function_call(node* tree, Scope * scope);
 void parseReturnStatementType(node* tree,Scope* scope,Type* type);
 Type getIDName(node* tree,Scope* scope);
 void initialization(node* tree,  Scope* scope, Type type, decl_init_flag flag);
-void checkXORStatement(node* tree,Scope* scope);
 void booleanExprTyping(node* tree, Scope* scope);
 void ifBlockParsing(node* tree, Scope* scope);
 void whileBlockParsing(node* tree, Scope* scope);
 void doWhileBlockParsing(node* tree, Scope* scope);
 void forBlockParsing(node* tree, Scope* scope);
-//void printParamList(paramElem* head);
 
 Scope* globalScope ;
 paramElem* tempList;
@@ -100,19 +97,13 @@ unsigned int binarytree_count(node* tree, char* key)
 
 void runSemantic(node* tree){
     isMainDeclared=FALSE;
-	//printTree(tree,0);
 	globalScope= createScope("GLOBAL",UNTYPED,NULL,FALSE);
     globalScope->isScopeClosed=TRUE;
-	//updateNodesNype(tree);
 
 	createScopes(tree,globalScope);
     checkMainCorrectness(globalScope);
-    printf("\n\t\t------ GLOBAL ------\n");
-	//printScope(globalScope);
 
-
-    //printf("GLOBAL : %s\n",globalScope->name);
-    printMatrix(globalScope->matrix);
+    printf("Semantic check done successfully.\n");
 }
 
 
@@ -185,7 +176,6 @@ void createScopes(node *tree,Scope * globalScope){
     }
 
     if(strcmp("return-void",tree->token)==0){
-        printf("return void for %s\n",globalScope->name);
         globalScope->isScopeClosed = TRUE;
         if(globalScope->returnType!=VOID_TYPE)
         {
@@ -206,13 +196,11 @@ void createScopes(node *tree,Scope * globalScope){
 	if(strcmp("BLOCK",tree->token)==0)
     {
         globalScope = prependScope("BLOCK",globalScope->returnType,globalScope,FALSE);
-
     }
 
 
     if(strcmp("(IF",tree->token)==0)
     {
-
         ifBlockParsing(tree,globalScope);
     }
 
@@ -259,7 +247,6 @@ void createScopes(node *tree,Scope * globalScope){
             {
                 if(globalScope->isScopeClosed == TRUE)
                 {
-                    printf("pop %s\n",globalScope->name);
                     popScope(globalScope);
                 }
                 else
