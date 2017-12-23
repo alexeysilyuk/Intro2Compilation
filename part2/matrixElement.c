@@ -14,12 +14,6 @@ char* error_text[] ={"Undeclared","Using undeclared variable",
 
 typedef enum bool{FALSE,TRUE} Bool;
 
-typedef struct paramElem{
-    char* name;
-    Type type;
-    struct paramElem* next;
-
-}paramElem;
 
 typedef struct matrixElement
 {
@@ -30,7 +24,6 @@ typedef struct matrixElement
     int paramsAmount;
     int paramTypeIndex;
     Type* paramsTypes;
-    paramElem* paramList;
     struct matrixElement* next;
 } matrixElement;
 
@@ -55,7 +48,6 @@ matrixElement* createMatrixElement(char* name, Type type, char* value,Bool isFun
 	new_node->isFunc = isFunc;
 	new_node->paramsAmount = paramsAmount;
     new_node->paramsTypes = (Type*)malloc(10* sizeof(Type));
-    new_node->paramList = NULL;
     new_node->paramTypeIndex=0;
 
     new_node->next = next;
@@ -65,15 +57,12 @@ matrixElement* createMatrixElement(char* name, Type type, char* value,Bool isFun
 
 matrixElement* prependMatrixElement(matrixElement* head,char* name, Type type, char* value,Bool isFunc, int paramsAmount)
 {
-    //printf("\tName : %s, type : %d, value : %s\n",name,type, value);
     matrixElement* new_node = createMatrixElement(name,type,value,isFunc,paramsAmount,head);
-
-    //printf("\tName : %s, type : %d, value : %s\n",new_node->name,new_node->type, new_node->value);
     head = new_node;
     return head;
 }
 
-void printMatrix(matrixElement* head){
+/*void printMatrix(matrixElement* head){
 
 	matrixElement *current = head;
 	while(current!=NULL){
@@ -86,7 +75,7 @@ void printMatrix(matrixElement* head){
         current= current->next;
     }
 }
-
+*/
 
 Bool isFuncInMatrix(char* name, matrixElement* head){
     matrixElement *current = head;
@@ -94,14 +83,13 @@ Bool isFuncInMatrix(char* name, matrixElement* head){
         {
             if(strcmp(name,current->name)==0 && current->isFunc==TRUE)
             {
-                //printf("in 1\n");
                 return TRUE;
             }
-            //printf("%s 555\n",current->name);
+
             current = current->next;
         }
-        //printf("in 2\n");
-        return FALSE;
+
+    return FALSE;
 }
 
 Bool isVariableInMatrix(char* name, matrixElement* head){
@@ -115,7 +103,7 @@ Bool isVariableInMatrix(char* name, matrixElement* head){
 
             current = current->next;
         }
-        return FALSE;
+    return FALSE;
 }
 
 Type getVarTypeMatrix(char* name, matrixElement* head){
@@ -127,6 +115,7 @@ Type getVarTypeMatrix(char* name, matrixElement* head){
         else
             current = current->next;
     }
+
     return UNTYPED;
 }
 
@@ -142,38 +131,4 @@ Type getFuncTypeMatrix(char* name, matrixElement* head){
     return UNTYPED;
 }
 
-paramElem* prependParamElem(paramElem* newElem, paramElem* head){
-    newElem->next = head;
-    head = newElem;
-    return head;
-}
-
-paramElem* createParamElem(char* name, Type type)
-{
-    paramElem* newElem = (paramElem*)malloc(sizeof(paramElem));
-    if(!newElem){
-        printf("Can't allocat memory for paramElem element");
-        exit(1);
-    }
-    newElem->name = strdup(name);
-    newElem->type = type;
-    newElem->next = NULL;
-
-    return newElem;
-
-}
-
-void printParamsList(Type* typesList, int ammount){
-
-    if(typesList){
-        int i;
-        for(i=0;i<ammount;i++)
-        {
-            if(typesList[i])
-                printf("\t\t\t%d\n",typesList[i]);
-        }
-
-    }
-
-}
 

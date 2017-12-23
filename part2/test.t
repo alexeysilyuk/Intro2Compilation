@@ -4,11 +4,10 @@ void main(){
 	int b = 1+3+x;
 	boolean boo;
 
-	while(boo)	{
-		boo=false;
-		return ;
+	char foo(int i,char t){
+		return 'a';
 	}
 
-
-	//return;
+	char tt = foo(5,'a');
+	return;
 }

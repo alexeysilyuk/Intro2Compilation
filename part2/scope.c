@@ -55,7 +55,6 @@ Scope* popScope(Scope* head)
         }
     else
         {
-            //printf("POP %s\n",head->name);
             return head->upperScope;
         }
 }
@@ -63,7 +62,6 @@ Scope* popScope(Scope* head)
 
 Bool isFuncDeclaredInScope(char* funcName, Scope* currentScope)
 {
-//    printf("seek %s in %s\n",funcName,currentScope->name);
 	while(currentScope)
 	{
 		if(isFuncInMatrix(funcName,currentScope->matrix)== TRUE)
@@ -139,7 +137,7 @@ Type getFuncTypeScope(char* varName, Scope* currentScope)
 }
 
 
-void printScope(Scope* head)
+/*void printScope(Scope* head)
 {
     printf("\n----------------------------------------------\n");
     if(head){
@@ -153,4 +151,4 @@ void printScope(Scope* head)
 
     }
     printf("\n----------------------------------------------\n");
-}
+}*/
