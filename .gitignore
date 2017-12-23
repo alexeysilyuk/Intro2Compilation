@@ -2,6 +2,7 @@
 .c
 .output
 .dot
+.idea
 lex.yy.c
 project
 y.output
