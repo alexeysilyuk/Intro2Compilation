@@ -183,7 +183,7 @@ expression
 boolean_expr
 		: boolean_expr AND boolean_expr_complex { $$ = mknode("&&", $1,  $3, 1,BOOLEAN_TYPE); }
 		| boolean_expr OR boolean_expr_complex { $$ = mknode("||", $1,  $3, 1,BOOLEAN_TYPE); }
-		| boolean_expr_complex { $$ = mknode("BOOLEAN_EXPR", $1, NULL, 0,UNTYPED); }
+		| boolean_expr_complex { $$ = mknode("BOOLEAN_EXPR", $1, NULL, 0,BOOLEAN); }
 		| bool_unary_op boolean_expr_complex { $$ = mknode("!", NULL, $2, 1,UNTYPED); }
 		;
 
@@ -317,7 +317,7 @@ declarator
 		{ $$ = mknode("ARRAY", $1, NULL,0,UNTYPED); }
 	| declarator '[' array_size ']'  
 		{ $$ = mknode("ID-ARRAY[size]", $1,  $3, 0,UNTYPED); }
-	| bitwise_operators ID 
+	| bitwise_operators ID
 		{ $$ = mknode("BIT_OP", $1,  $2, 0,UNTYPED); }
 	;
 
@@ -358,8 +358,8 @@ operator
 	;
 
 bitwise_operators
-	: BITWISE_AND { $$ = mknode($1, NULL, NULL, 1,BITWISE_AND); }
-	| BITWISE_XOR { $$ = mknode($1, NULL, NULL, 1,BITWISE_XOR); }
+	: BITWISE_AND { $$ = mknode($1, NULL, NULL, 1, BITWISE_AND_TYPE); }
+	| BITWISE_XOR { $$ = mknode($1, NULL, NULL, 1, BITWISE_XOR_TYPE); }
 	;
 
 
@@ -397,6 +397,7 @@ node* mknode(char* token, node* left, node* right, int printHeader, Type type) {
 	newNode->right = right;
 	newNode->printHeader = printHeader;
 	newNode->type = type;
-	return newNode;
+
+    return newNode;
 }
 

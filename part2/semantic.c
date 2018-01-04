@@ -7,6 +7,11 @@ typedef struct node {
 	char* token;
 	struct node* left;
 	struct node* right;
+    char* code;
+    char* var;
+    char* next;
+    char* trueLabel;
+    char* falseLabel;
 	int printHeader;
 	Type type;
 } node;
@@ -126,7 +131,9 @@ void createScopes(node *tree,Scope * globalScope){
 
     if(strcmp("DECL_INIT",tree->token)==0){
         node *subTree = tree;
+
         initialization(subTree,globalScope,UNTYPED,Initialization);
+        //printTree(tree,0);
     }
 
 
@@ -176,6 +183,7 @@ void createScopes(node *tree,Scope * globalScope){
 	if(strcmp("BLOCK",tree->token)==0)
     {
         globalScope = prependScope("BLOCK",globalScope->returnType,globalScope,FALSE);
+
     }
 
 
@@ -225,8 +233,10 @@ void createScopes(node *tree,Scope * globalScope){
 
             if(globalScope->isFunction)
             {
-                if(globalScope->isScopeClosed == TRUE)
-                {
+                if(globalScope->isScopeClosed == TRUE) {
+                    popScope(globalScope);
+                }
+                    else if(globalScope->returnType==VOID_TYPE){
                     popScope(globalScope);
                 }
                 else
@@ -285,16 +295,30 @@ void declaration(node* tree,  Scope* scope, Type type) {
 
     if(strcmp(tree->token,"ID")==0)
     {
-
+        if(isVariableInMatrix(tree->left->token, scope->matrix) == TRUE)
+        {
+            printf("Variable %s is already exists\n", tree->left->token);
+            exit(ERROR);
+        }
+        else
+        {
+            scope->matrix = prependMatrixElement(scope->matrix,tree->left->token,type,"-",FALSE,0);
+        }
+        /*
         if(isVariableDeclaredInScope(tree->left->token,scope)==FALSE)
         {
             scope->matrix = prependMatrixElement(scope->matrix,tree->left->token,type,"-",FALSE,0);
         }
 
         else {
-            printf("Variable %s is already exists\n", tree->left->token);
-            exit(ERROR);
+            updateVarInScope(tree->left->token,type,globalScope);
+            printf("variable %s redeclared to type %d\n",tree->left->token,type);
+
+
+            //printf("Variable %s is already exists\n", tree->left->token);
+            //exit(ERROR);
         }
+         */
     }
 
 
@@ -345,6 +369,9 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
     }
 
     if(strcmp("FUNC_PARAM",tree->token)==0){
+
+        complexExprTyping(tree->left,0,scope);
+        tree->type=tree->left->type;
         return;
     }
     if(strcmp("function_call",tree->token)==0)
@@ -355,12 +382,73 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
 
     if(strcmp("&",tree->token)==0)
     {
-        tree->type = BITWISE_AND;
+        tree->type = BITWISE_AND_TYPE;
     }
 
     if(strcmp("^",tree->token)==0)
     {
-        tree->type = BITWISE_XOR;
+
+        tree->type = BITWISE_XOR_TYPE;
+        return;
+    }
+    /*if(strcmp("BIT_OP",tree->token)==0){
+        tree->type=tree->right->type;
+        return;
+    }*/
+
+
+    if(strcmp(tree->token,">")==0 ||
+       strcmp(tree->token,">=")==0 ||
+       strcmp(tree->token,"<")==0 ||
+       strcmp(tree->token,"<=")==0)
+    {
+        if(tree->left->type != INT_TYPE || tree->right->type!=INT_TYPE)
+        {
+            printf("%s|%d - %s:%d\n",tree->left->token,tree->left->type,tree->right->token,tree->right->type);
+            printf("Operands in boolean expression must be INTEGER\n");
+            exit(ERROR);
+        }
+        else
+        {
+            tree->type = BOOLEAN_TYPE;
+            return;
+        }
+    }
+
+    if(strcmp("&&",tree->token)==0 || strcmp("||",tree->token)==0)
+    {
+        if(tree->left->type==BOOLEAN_TYPE && tree->right->type==BOOLEAN_TYPE)
+        {
+            tree->type = BOOLEAN_TYPE;
+            return;
+        }
+    }
+
+    if(strcmp("==",tree->token)==0 || strcmp("!=",tree->token)==0)
+    {
+        if(tree->left->type == INT_TYPE && tree->right->type==INT_TYPE ||
+           tree->left->type == BOOLEAN_TYPE && tree->right->type==BOOLEAN_TYPE ||
+           tree->left->type == CHARP_TYPE && tree->right->type==CHARP_TYPE ||
+           tree->left->type == CHAR_TYPE && tree->right->type==CHAR_TYPE ||
+           tree->left->type == INTP_TYPE && tree->right->type==INTP_TYPE)
+        {
+            tree->type = BOOLEAN_TYPE;
+            return;
+        }
+        else
+        {
+            printf("Operands types on comparison expression must be equal\n");
+            exit(ERROR);
+        }
+    }
+
+    if(strcmp("!",tree->token)==0)
+    {
+        complexExprTyping(tree->right,0,scope);
+        tree->type= tree->right->type;
+
+        if(tree->right->type != BOOLEAN_TYPE)
+            printf("\'!\' Operator must receive only boolean right operand!\n");
     }
 
     if(strcmp("EXPR_ID[]",tree->token)==0)
@@ -374,6 +462,7 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
         Type type;
 
         if (isVariableDeclaredInScope(tree->token, scope) == TRUE) {
+
             type = getVarTypeScope(tree->token, scope);
             tree->type = type;
         }
@@ -382,6 +471,7 @@ void complexExprTyping(node* tree, int space, Scope* scope) {
             tree->type = type;
         }
         else {
+
             printf("%s : %s %s\n", symantic_error, tree->token, error_text[UNDECLARED]);
             exit(UNDECLARED);
         }
@@ -398,27 +488,37 @@ Type checkType(node* tree){
         if(tree->left->type == tree->right->type)
             return tree->left->type;
 
+        if(strcmp(tree->left->token,"^")==0 && tree->right->type == CHARP_TYPE) {
+            return CHAR_TYPE;
+        }
+        if(strcmp(tree->left->token,"^")==0 && tree->right->type == INTP_TYPE)
+        {
+            return INT_TYPE;
+        }
+
         if(tree->left->type== INT_TYPE && tree->right->type == INT_TYPE )
             return INT_TYPE;
 
         if (tree->left->type== BOOLEAN_TYPE && tree->right->type == BOOLEAN_TYPE)
             return BOOLEAN_TYPE;
 
-        if(tree->left->type== BITWISE_XOR && tree->right->type == INTP_TYPE)
+        if(tree->left->type== BITWISE_XOR_TYPE && tree->right->type == INTP_TYPE)
             return INT_TYPE;
 
-        if(tree->left->type== BITWISE_XOR && tree->right->type == CHARP_TYPE)
+        if(tree->left->type== BITWISE_XOR_TYPE && tree->right->type == CHARP_TYPE) {
             return CHAR_TYPE;
+        }
 
-        if(tree->left->type== BITWISE_AND && tree->right->type == CHAR_TYPE)
+
+        if(tree->left->type== BITWISE_AND_TYPE && tree->right->type == CHAR_TYPE)
             return CHARP_TYPE;
 
-        if(tree->left->type== BITWISE_AND && tree->right->type == INT_TYPE)
+        if(tree->left->type== BITWISE_AND_TYPE && tree->right->type == INT_TYPE)
             return INTP_TYPE;
 
-        if(tree->left->type== BITWISE_AND && tree->right->type == STRING_TYPE)
+        /*if(tree->left->type== BITWISE_AND_TYPE && tree->right->type == STRING_TYPE)
             return CHARP_TYPE;
-
+*/
         if(tree->left->type== CHAR_TYPE && tree->right->type == NULL_TYPE)
             return CHAR_TYPE;
 
@@ -517,6 +617,7 @@ Bool isAmountOfParamsCompare(Scope* scope, char* funcName, int paramsAmount,Type
         return FALSE;
 
     for(i=0;i<params;i++){
+
         if(orignalParamsList[i]!=compareParamsList[i])
         {
             printf("expexted type: %d, received type: %d\n",orignalParamsList[i],compareParamsList[i]);
@@ -570,7 +671,10 @@ void function_call(node* tree, Scope* scope){
         tree->type = type;
 
         Type* typesArray = (Type*)malloc(10* sizeof(Type));
+
         int params = funcCallCountParams(tree->left,typesArray,0);
+        complexExprTyping(tree->left,0,scope);
+
 
         if(isAmountOfParamsCompare(scope,tree->left->token,params,typesArray) == FALSE){
             printf("function %s have incorrect amount of parameters!\n",tree->left->token);
@@ -621,6 +725,20 @@ void parseReturnStatementType(node* tree,Scope* scope,Type* type){
 
 Type getIDName(node* tree,Scope* scope){
 
+    if(tree->left && tree->right) {
+        if (tree->left->type == BITWISE_XOR_TYPE && getIDName(tree->right,scope) == INTP_TYPE) {
+            return INT_TYPE;
+        }
+        if (tree->left->type == BITWISE_XOR_TYPE && getIDName(tree->right,scope) == CHARP_TYPE) {
+            return CHAR_TYPE;
+        }
+        if (tree->left->type == BITWISE_AND_TYPE && getIDName(tree->right,scope) == INT_TYPE) {
+            return INTP_TYPE;
+        }
+        if (tree->left->type == BITWISE_AND_TYPE && getIDName(tree->right,scope) == CHAR_TYPE) {
+            return CHARP_TYPE;
+        }
+    }
         if(tree->type == ID_TYPE) {
             if (isVariableDeclaredInScope(tree->token, scope) == TRUE)
                 return getVarTypeScope(tree->token, scope);
@@ -629,7 +747,6 @@ Type getIDName(node* tree,Scope* scope){
                 return getFuncTypeScope(tree->token,scope);
 
             else {
-
                 printf("%s : %s %s\n", symantic_error, tree->token, error_text[UNDECLARED]);
                 exit(UNDECLARED);
             }
@@ -642,21 +759,30 @@ Type getIDName(node* tree,Scope* scope){
 }
 
 void initialization(node* tree,  Scope* scope, Type type, decl_init_flag flag) {
+    //booleanExprTyping(tree,scope);
 
     if (flag == Initialization) {
+
         type = getIDName(tree->left, scope);
     }
 
+    complexExprTyping(tree->right, 0, scope);
+    //booleanExprTyping(tree,scope);
+    //tree->type = checkType(tree->left);
     tree->type = type;
+
+
     complexExprTyping(tree->right, 0, scope);
 
 
     if((type==CHARP_TYPE || type == INTP_TYPE) && tree->right->type == NULL_TYPE)
         return;
-    else if((type==STRING_TYPE || type ==CHAR_TYPE) && tree->right->type == CHAR_TYPE)
+    /*else if((type==STRING_TYPE || type ==CHAR_TYPE) && tree->right->type == CHAR_TYPE)
         return;
+*/
     else if (type != tree->right->type) {
-        printf("Can't assign result with type %d to variable with %d type\n", tree->right->type, type);
+
+        printf("%d <- %d Can't assign \n",type, tree->right->type);
         exit(ERROR);
     }
 
@@ -670,9 +796,11 @@ void ifBlockParsing(node* tree, Scope* scope){
 }
 
 void booleanExprTyping(node* tree, Scope* scope){
+
     complexExprTyping(tree,0,scope);
     if(strcmp("complex_expression",tree->token)==0)
     {
+
         complexExprTyping(tree,0,scope);
         if(tree->left)
             tree->type = tree->left->type;
@@ -699,12 +827,12 @@ void booleanExprTyping(node* tree, Scope* scope){
     {
         complexExprTyping(tree->left,0,scope);
         complexExprTyping(tree->right,0,scope);
+        tree->type = BOOLEAN_TYPE;
 
     }
 
     if(strcmp("==",tree->token)==0 || strcmp("!=",tree->token)==0)
     {
-
         if(tree->left->type == INT_TYPE && tree->right->type==INT_TYPE ||
            tree->left->type == BOOLEAN_TYPE && tree->right->type==BOOLEAN_TYPE ||
            tree->left->type == CHARP_TYPE && tree->right->type==CHARP_TYPE ||

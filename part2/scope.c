@@ -89,15 +89,18 @@ Bool isFuncDeclaredInCurrentScope(char* funcName, Scope* currentScope)
 
 Bool isVariableDeclaredInScope(char* varName, Scope* currentScope)
 {
+
+//        if (isVariableInMatrix(varName, currentScope->matrix) == TRUE)
+//            return TRUE;
+//        else
+//            return FALSE;
+
     while(currentScope) {
-        if (currentScope->isFunction == TRUE) {
             if (isVariableInMatrix(varName, currentScope->matrix) == TRUE)
                 return TRUE;
             else
-                return FALSE;
-        }
-        if (currentScope->isFunction == FALSE)
-            currentScope=currentScope->upperScope;
+                currentScope=currentScope->upperScope;
+
     }
 	return FALSE;
 
@@ -151,4 +154,18 @@ Type getFuncTypeScope(char* varName, Scope* currentScope)
 
     }
     printf("\n----------------------------------------------\n");
+}*/
+
+/*void updateVarInScope(char* varName, Type type, Scope* scope){
+    Scope* current = scope;
+    while(current){
+        if(isVariableDeclaredInScope(varName,current)==TRUE)
+        {
+            updateVarTypeInMatrix(varName,type,current->matrix);
+            return;
+        }
+        current=current->upperScope;
+    }
+
+
 }*/
