@@ -1,8 +1,8 @@
 %{
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include "semantic.c"
+#include "3AC.c"
 
 
 node* mknode (char* token, node* left, node* right, int printHeader, Type type);
@@ -20,8 +20,10 @@ node* mknode (char* token, node* left, node* right, int printHeader, Type type);
 	#define YYPRINT(file, type, value) fprint(file, "%d", value);
 %}
 
+ 
 %left MINUS_OP,  PLUS_OP
 %left DIVISION_OP, MULT_OP
+
 
 %token <string>  LP , RP, INCR, DECR
 %token <string>  BOOLEAN, CHAR, INT, VOID, STRING,  INTP, CHARP
@@ -45,7 +47,10 @@ node* mknode (char* token, node* left, node* right, int printHeader, Type type);
 
 
 
-main : program {printf("Lexical check done successfully. \n"); runSemantic($1);  };
+main : program {printf("Lexical check done successfully. \n"); 
+runSemantic($1);
+ printStack();  
+};
 
 
 program
@@ -96,7 +101,8 @@ line_statement
 
 declaration
 	: type list_of_declarators ';' 
-		{$$ = mknode("RECURSIVE_DECLARATION", $1, $2, 0, $1->type); }
+		{$$ = mknode("RECURSIVE_DECLARATION", $1, $2, 0, $1->type);
+		 }
 	;
 
 builtin_functions
@@ -181,15 +187,21 @@ expression
 
 
 boolean_expr
-		: boolean_expr AND boolean_expr_complex { $$ = mknode("&&", $1,  $3, 1,BOOLEAN_TYPE); }
+		: boolean_expr AND  boolean_expr_complex { $$ = mknode("&&", $1,  $3, 1,BOOLEAN_TYPE);
+		
+		 }
 		| boolean_expr OR boolean_expr_complex { $$ = mknode("||", $1,  $3, 1,BOOLEAN_TYPE); }
 		| boolean_expr_complex { $$ = mknode("BOOLEAN_EXPR", $1, NULL, 0,BOOLEAN); }
 		| bool_unary_op boolean_expr_complex { $$ = mknode("!", NULL, $2, 1,UNTYPED); }
 		;
 
 boolean_expr_complex
-		: boolean_expr_simple bool_binary_op boolean_expr_complex
-			{ $$ = mknode($2->token, $1, $3, 1,$1->type); }
+		: boolean_expr_simple bool_binary_op 
+		 boolean_expr_complex
+			{ $$ = mknode($2->token, $1, $3, 1,$1->type);
+
+				//codeGen();
+			}
 		| boolean_expr_simple 
 			{ $$ = mknode("BOOLEAN_EXPR_COMPLEX", $1, NULL, 0,$1->type); }
 		;
@@ -233,14 +245,19 @@ function_call_parameters_list
 
 list_of_declarators
 	: declarator_initialization 
-		{ $$ = mknode("DECLARATION_INIT", $1, NULL, 0,$1->type); }
+		{ $$ = mknode("DECLARATION_INIT", $1, NULL, 0,$1->type); 
+
+
+		}
 	| declarator_initialization ',' list_of_declarators 
 		{ $$ = mknode($1->token, $1, $3, 0,$1->type); }
 	;
 
 declarator_initialization
 	: declarator ASSIGNMENT initializator 
-		{ $$ = mknode("DECL_INIT", $1, $3, 1,UNTYPED); }
+		{ $$ = mknode("DECL_INIT", $1, $3, 1,UNTYPED);
+			
+		}
 	| declarator 
 		{ $$ = mknode("DECL", $1, NULL, 0,UNTYPED); }
 	;
@@ -258,7 +275,7 @@ complex_expression
 	| basic_expression operator complex_expression 
 		{
             $$ = mknode("complex_expression", $1, $3, 1, $2->type);
-
+				//codeGen();
              }
 	| operator complex_expression 
 		{ $$ = mknode("complex_expression", NULL, $2, 1,$2->type); }
@@ -269,12 +286,12 @@ basic_expression
 	: function_call 
 		{ $$ = mknode("function_call", $1,  NULL,0,UNTYPED); }
 	| terminal_const_values
-		{ $$ = mknode($1->token, $1, NULL,0,$1->type); }
+		{ $$ = mknode($1->token, $1, NULL,0,$1->type); push($1->token); }
 	| ID '[' array_size ']'
 		{ $$ = mknode("EXPR_ID[]", $1, $3,0,UNTYPED);
 		 } 
 	| ID 
-		{ $$ = mknode("EXPR_ID", $1, NULL, 1,UNTYPED); }
+		{ $$ = mknode("EXPR_ID", $1, NULL, 1,UNTYPED); push($1->token); }
 	| '|' ID '|' 
 		{ $$ = mknode("|ID|", $2, NULL,0,UNTYPED); }
 	| lp boolean_expr rp 
@@ -312,7 +329,7 @@ literals
 
 
 declarator
-	: ID { $$ = mknode("ID", $1, NULL, 0,UNTYPED); }
+	: ID { $$ = mknode("ID", $1, NULL, 0,UNTYPED);  }
 	| declarator '[' ']' 
 		{ $$ = mknode("ARRAY", $1, NULL,0,UNTYPED); }
 	| declarator '[' array_size ']'  
@@ -351,10 +368,10 @@ type
 
 
 operator
-	: MINUS_OP { $$ = mknode($1, NULL, NULL, 1,INT_TYPE); }
-	| PLUS_OP { $$ = mknode($1, NULL, NULL, 1,INT_TYPE); }
-	| DIVISION_OP { $$ = mknode($1, NULL, NULL, 1,INT_TYPE); }
-	| MULT_OP { $$ = mknode($1, NULL, NULL, 1,INT_TYPE); }
+	: MINUS_OP { $$ = mknode($1, NULL, NULL, 1,INT_TYPE); push("-"); }
+	| PLUS_OP { $$ = mknode($1, NULL, NULL, 1,INT_TYPE); push("+"); }
+	| DIVISION_OP { $$ = mknode($1, NULL, NULL, 1,INT_TYPE); push("/"); }
+	| MULT_OP { $$ = mknode($1, NULL, NULL, 1,INT_TYPE); push("*"); }
 	;
 
 bitwise_operators
