@@ -120,9 +120,9 @@ if_block
 	;
 
 else_block
-	: ELSE line_statement 
+	: ELSE {else_cond();} line_statement
 		{ $$ = mknode("BLOCK", $2, mknode("}", NULL, NULL, 0,UNTYPED), 0,UNTYPED); }
-	| ELSE code_block 
+	| ELSE {else_cond();} code_block
 		{ $$ = mknode("BLOCK", $2, NULL, 0,UNTYPED); }
 	|  { $$ = mknode("epsilon", NULL, NULL, 0,UNTYPED); }
 	;

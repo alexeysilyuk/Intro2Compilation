@@ -81,6 +81,7 @@ true|false 		{ yylval.string = strdup(yytext); return BOOL_CONSTANT_VALUE; };
 "-" {yylval.string = strdup(yytext);  return MINUS_OP;};
 
 
+
 "/*"                                    { comment_check(); }
 "//".*                                  {  }
 

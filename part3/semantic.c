@@ -3,6 +3,8 @@
 #include <string.h>
 #include "scope.c"
 
+
+
 typedef struct node {
 	char* token;
 	struct node* left;
