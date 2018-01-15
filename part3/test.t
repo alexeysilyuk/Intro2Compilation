@@ -1,11 +1,11 @@
-int foo(){
+/*int foo(){
 	int a=1+2;
 	return a;
 }
 
 void main()
 {
-	/*
+
 	int a = 10 - 5;
 	boolean b=true;
 
@@ -23,30 +23,44 @@ void main()
 			a=5;
 		}
 	}
-*/
+
 
 		int i;
 	for(i =0; i<10; i=i+1)
 	{
 		int y = 10;
 	}
+	for(i =0; i<10; i=i+1)
+		{
+			int t = 10;
+	}
 
 	string s = "TEST";
-		char a=s[4];
+
 
 }
+*/
 
+int foo()
+{
+	int a;
+	a = 23;
+	if (a == 23)
+		a = 10;
+	else
+		a = 19;
 
+	return a+a+1;
+}
 
-/*
-ifz t1 goto L1:
-	ifNz goto L2
+void main()
+{
+	int a,b;
 
-
-	L1:
-		jhg,mjh
-				goto L3:
-	L2:
-		fhgjhg
-
-	L3:....*/;
+	a = 0;
+	do {
+		b = foo();
+		a = a + b;
+	}while(a < 10);
+	return ;
+}

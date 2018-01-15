@@ -285,7 +285,7 @@ basic_expression
  
 
 
-/*
+
 parameters_list
 	: complex_expression { $$ = mknode("PARAM_LIST", $1,  NULL,0,UNTYPED); }
 	| type complex_expression { $$ = mknode("PARAM_LIST", $1, $2, 1,UNTYPED); }
@@ -295,7 +295,7 @@ parameters_list
 		{ $$ = mknode("PARAM_LIST", 
 				mknode("PARAM_LIST", $1, $2, 0,UNTYPED), $4, 0,UNTYPED); }
 	;
-*/
+
 terminal_const_values
 	: INT_CONSTANT_VALUE { $$ = mknode(yytext, NULL, NULL,  1,INT_TYPE);}
 	| BOOL_CONSTANT_VALUE { $$ = mknode(yytext, NULL, NULL, 1,BOOLEAN_TYPE);}

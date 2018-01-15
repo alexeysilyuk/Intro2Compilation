@@ -98,9 +98,9 @@ void codeGen() {
 
 void printStack()  {
     while(top>=0) {
-        printf("%s\n", st[top]); 
+        printf("%s\n", st[top]);
         top--;
-    } 
+    }
 }
 
 void varAssign() {
@@ -112,6 +112,7 @@ if (st[top-1] && st[top]) {
     strcat(temp_text,st[top]);
     genLine(temp_text);
     top -= 3;
+    funcBytes+=4;
     }
 }
 
@@ -124,9 +125,8 @@ char* freshLabel(){
     strcat(tempLabel,itoa);
     strcat(Label,tempLabel);
     label[++Itop]= Inum;
-
     labels[Inum] = Inum;
-    //printf("upper INUM : %d\n",labels[Inum]);
+
     return Label;
 }
 
@@ -158,7 +158,7 @@ void printFreshLable(){
 void endBlock(){
     char temp_text[100] = "";
     strcat(temp_text,freshLabel());
-    strcat(temp_text," :");
+    strcat(temp_text," : if-else block end");
     genLine(temp_text);
 }
 
@@ -185,18 +185,20 @@ int printCode()
     }
 
     unsigned long lineNumber = 0;
-
-
+    FILE* file;
+    file=fopen("output.3ac","a");
     while(codeLine)
     {
         int ret;
         //No goto
         if(codeLine->gotoL == -1){
             ret = printf("%-4lu %s\n", lineNumber, codeLine->code);
+            fprintf(file,"%-4lu %s\n", lineNumber, codeLine->code);
         }
             //goto
         else{
-            ret = printf("%-4lu %s %d\n", lineNumber, codeLine->code, codeLine->gotoL);
+            ret = printf("%-4lu %s\n", lineNumber, codeLine->code/*, codeLine->gotoL*/);
+            fprintf(file,"%-4lu %s\n", lineNumber, codeLine->code);
         }
         if(ret <= 0)
         {
@@ -317,11 +319,12 @@ void func(char * funcName){
 
     char buffer[50]="",bytes[5]="";
     strcat(buffer,funcName);
-    strcat(buffer,":\n\t Begin func :");
+    genLine(buffer);
+    strcpy(buffer,"");
+    strcat(buffer,"\t Begin func :");
     genLine(buffer);
     strcpy(codeLineTail->funcName,funcName);
 
-    //codeLineTail->gotoL=-1;
 }
 
 void updateFuncBytes(char* funcName){
@@ -332,6 +335,7 @@ void updateFuncBytes(char* funcName){
             sprintf(buffer, "%d bytes", funcBytes);
             strcat(tempLine->code, buffer);
             funcBytes=0;
+
             break;
         }
         tempLine=tempLine->next;
@@ -339,9 +343,29 @@ void updateFuncBytes(char* funcName){
 
 }
 
+void funcReturn(){
+    char buffer[50]="";
+    strcat(buffer,"\tReturn ");
+    strcat(buffer,st[top]);
+    top--;
+    genLine(buffer);
+
+}
+
 void funcCall(char* funcName)
 {
     char buffer[50] = "";
     sprintf(buffer, "LCall %s", funcName);
+    top--;
     push(buffer);
+
 }
+
+void voidFuncReturn(){
+    char buffer[50]="";
+    strcat(buffer,"\tReturn;");
+    genLine(buffer);
+}
+
+
+void funcCallParams(){}

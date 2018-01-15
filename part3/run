@@ -2,7 +2,7 @@
 set -e 
 OPT=$(getopt -n "LEx&YAcc" -o "t,v" -- "$@")
 
-rm lex.yy.c project y.output y.tab.h y.tab.c
+
 
 eval set -- "$OPT"
 trace=0
@@ -40,4 +40,6 @@ fi
 
 cc -o project y.tab.c -ll -Ly;
 ./project < test.t
+
+rm lex.yy.c project y.output y.tab.h y.tab.c
 

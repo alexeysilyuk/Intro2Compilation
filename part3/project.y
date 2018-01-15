@@ -65,7 +65,7 @@ node* mknode (char* token, node* left, node* right, int printHeader, Type type);
 main : program {printf("Lexical check done successfully. \n"); 
 runSemantic($1);
 printCode();
-//	printStack();
+	printStack();
 };
 
 
@@ -110,8 +110,8 @@ updateFuncBytes($2->token);
 line_statement
 	: declaration { $$ = mknode("DECLARATION", $1, NULL, 0,$1->type); }  
 	| declarator_initialization ';' { $$ = mknode("DECLARATION_INIT", $1, NULL,0,$1->type); }
-	| RETURN ';' { $$ = mknode("return-void", NULL, NULL,1,UNTYPED); }
-	| RETURN expression ';' { $$ = mknode("return", $2, NULL, 1,$2->type); }
+	| RETURN ';' { $$ = mknode("return-void", NULL, NULL,1,UNTYPED); voidFuncReturn(); }
+	| RETURN expression ';' { $$ = mknode("return", $2, NULL, 1,$2->type); funcReturn(); }
 	| function_call ';' { $$ = mknode("function_call", $1, NULL,0,UNTYPED); }
 	;
 
@@ -134,19 +134,19 @@ loop_functions
 	;
 
 if_block
-	: IF lp boolean_expr rp {if_cond(); } line_statement {gotoNext(); else_cond();} else_block
+	: IF lp boolean_expr rp {if_cond(); } line_statement {gotoNext(); } else_block
 		{ $$ = mknode("(IF", mknode("(", $2, $3, 0,UNTYPED), mknode(")", 
 			mknode("BLOCK",$8,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED)
 			, $6, 1,UNTYPED), 1,UNTYPED); endBlock();}
-	| IF lp boolean_expr rp {if_cond();} code_block {gotoNext(); else_cond();} else_block
+	| IF lp boolean_expr rp {if_cond();} code_block {gotoNext(); } else_block
 		{ $$ = mknode("(IF", mknode("(", $2, $3, 0,UNTYPED), mknode("BLOCK", $6, $8, 1,UNTYPED), 1,UNTYPED); endBlock();}
 	;
 
 else_block
-	:  ELSE line_statement
-		{ $$ = mknode("BLOCK", $2, mknode("}", NULL, NULL, 0,UNTYPED), 0,UNTYPED); }
-	|  ELSE code_block
-		{ $$ = mknode("BLOCK", $2, NULL, 0,UNTYPED); }
+	:  ELSE {else_cond();} line_statement
+		{ $$ = mknode("BLOCK", $3, mknode("}", NULL, NULL, 0,UNTYPED), 0,UNTYPED); }
+	|  ELSE {else_cond();} code_block
+		{ $$ = mknode("BLOCK", $3, NULL, 0,UNTYPED); }
 	|   { $$ = mknode("epsilon", NULL, NULL, 0,UNTYPED); }
 	;
 
@@ -182,10 +182,10 @@ for_block_single_init
 	;
 
 for_block_inits_update
-	: ID ASSIGNMENT initializator 
-		{ $$ = mknode("=", $1, $3, 1,UNTYPED);  }
-	| ID ASSIGNMENT initializator ',' for_block_inits_update 
-		{ $$ = mknode(", ", mknode("=", $1, $3, 1,UNTYPED), $5, 1,UNTYPED);  }
+	: ID ASSIGNMENT initializator
+		{ $$ = mknode("=", $1, $3, 1,UNTYPED); varAssign(); }
+	| ID ASSIGNMENT initializator ',' for_block_inits_update
+		{ $$ = mknode(", ", mknode("=", $1, $3, 1,UNTYPED), $5, 1,UNTYPED); varAssign(); }
 	| ID inc_dec
 		{ $$ = mknode($2->token, $1, NULL, 1,UNTYPED);  }
 	| ID inc_dec ',' for_block_inits_update 
@@ -245,10 +245,10 @@ bool_unary_op
 
 
 function_call
-	: ID { funcCall($1->token); } lp rp
+	: ID  lp rp { funcCall($1->token); }
 		{ $$ = mknode($1->token, NULL, NULL,1,$1->type); }
-	| ID { funcCall($1->token); } lp function_call_parameters_list rp
-		{ $$ = mknode($1->token, NULL, $3,1,$1->type); }
+	| ID lp function_call_parameters_list rp { funcCall($1->token); }
+{ $$ = mknode($1->token, NULL, $3,1,$1->type); }
 	;
 
 function_call_parameters_list 

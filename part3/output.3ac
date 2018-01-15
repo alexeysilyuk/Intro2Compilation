@@ -1,0 +1,1047 @@
+0    foo:
+	 Begin func :8 bytes
+1    a = 23
+2    t0 = a==23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    t1 = a+a
+10   L3: Return t1
+11   main:
+	 Begin func :8 bytes
+12   a = 0
+13   t2 = a<10
+14   L4:
+15   ifZ t2 GOTO __ ;
+16   b = LCall foo
+17   t3 = a+b
+18   a = t3
+19   GOTO L4
+20   L5: Return;
+0    foo:	 Begin func :8 bytes
+1    a = 23
+2    t0 = a==23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    t1 = a+a
+10   L3: Return t1
+11   main:	 Begin func :8 bytes
+12   a = 0
+13   t2 = a<10
+14   L4:
+15   ifZ t2 GOTO __ ;
+16   b = LCall foo
+17   t3 = a+b
+18   a = t3
+19   GOTO L4
+20   L5: Return;
+0    foo
+1    	 Begin func :8 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :8 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   b = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   b = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :0 bytes
+14   L4: Return;
+0    foo
+1    	 Begin func :16 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    L2 : if-else block end
+9    t1 = a+a
+10   L3: Return t1
+11   main
+12   	 Begin func :0 bytes
+13   L4: Return;
+0    foo
+1    	 Begin func :16 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    L2 : if-else block end
+9    t1 = a+a
+10   L3: Return t1
+11   main
+12   	 Begin func :20 bytes
+13   a = 0
+14   t2 = a<10
+15   L4:
+16   ifZ t2 GOTO __ ;
+17   b = LCall foo
+18   t3 = a+b
+19   a = t3
+20   GOTO L4
+21   L5: Return;
+0    foo
+1    	 Begin func :16 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    L2 : if-else block end
+9    t1 = a+a
+10   L3: Return t1
+11   main
+12   	 Begin func :20 bytes
+13   a = 0
+14   t2 = a<10
+15   L4:
+16   ifZ t2 GOTO __ ;
+17   b = LCall foo
+18   t3 = a+b
+19   a = t3
+20   GOTO L4
+21   L5: Return;
+0    foo
+1    	 Begin func :16 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    L2 : if-else block end
+9    t1 = a+a
+10   L3: Return t1
+11   main
+12   	 Begin func :20 bytes
+13   a = 0
+14   t2 = a<10
+15   L4:
+16   ifZ t2 GOTO __ ;
+17   b = LCall foo
+18   t3 = a+b
+19   a = t3
+20   GOTO L4
+21   L5: Return;
+0    foo
+1    	 Begin func :16 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    L2 : if-else block end
+9    t1 = a+a
+10   L3: Return t1
+11   main
+12   	 Begin func :20 bytes
+13   a = 0
+14   t2 = a<10
+15   L4:
+16   ifZ t2 GOTO __ ;
+17   b = LCall foo
+18   t3 = a+b
+19   a = t3
+20   GOTO L4
+21   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   b = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :16 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    L2 : if-else block end
+9    t1 = a+a
+10   L3: Return t1
+11   main
+12   	 Begin func :20 bytes
+13   a = 0
+14   t2 = a<10
+15   L4:
+16   ifZ t2 GOTO __ ;
+17   b = LCall foo
+18   t3 = a+b
+19   a = t3
+20   GOTO L4
+21   L5: Return;
+0    foo
+1    	 Begin func :16 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    L2 : if-else block end
+9    t1 = a+a
+10   L3: Return t1
+11   main
+12   	 Begin func :20 bytes
+13   a = 0
+14   t2 = a<10
+15   L4:
+16   ifZ t2 GOTO __ ;
+17   b = LCall foo
+18   t3 = a+b
+19   a = t3
+20   GOTO L4
+21   L5: Return;
+0    foo
+1    	 Begin func :16 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L2 : if-else block end
+8    t1 = a+a
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   t2 = a<10
+14   L4:
+15   ifZ t2 GOTO __ ;
+16   b = LCall foo
+17   t3 = a+b
+18   a = t3
+19   GOTO L4
+20   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   b = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = 2
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = 
+19   t3 = +b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    Éº = 23
+3    t0 = €Ôº==23
+4    ifZ t0 GOTO L1 ;
+5    PÛº = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    ðáº = 19
+9    L2 : if-else block end
+10   t1 = °ìº+@îº
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   ð = 0
+15   t2 = Ð»<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = LCall foo
+19   t3 =  »+0»
+20   €» = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = €d==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = °|+@~
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = Ð—<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = LCall foo
+19   t3 =  «+0­
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2     = 
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = 
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = LCall foo
+19   t3 = aa+
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = 
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = LCall foo
+19   t3 = aa+
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   1 = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   1 = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   1 = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   a = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   a = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   a = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   a = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   a = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   b = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   b = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   b = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   b = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   b = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    ifZ t0 GOTO L1 ;
+4    a = 10
+5    		GOTO _NEXT_ ;
+6    L1 :
+7    a = 19
+8    L2 : if-else block end
+9    L3: Return t1
+10   main
+11   	 Begin func :20 bytes
+12   a = 0
+13   L4:
+14   ifZ t2 GOTO __ ;
+15   b = LCall foo
+16   a = t3
+17   GOTO L4
+18   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   b = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   b = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :20 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+a
+11   L3: Return t1
+12   main
+13   	 Begin func :20 bytes
+14   a = 0
+15   t2 = a<10
+16   L4:
+17   ifZ t2 GOTO __ ;
+18   1 = LCall foo
+19   t3 = a+b
+20   a = t3
+21   GOTO L4
+22   L5: Return;
+0    foo
+1    	 Begin func :24 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+1
+11   t2 = a+t1
+12   L3: Return t2
+13   main
+14   	 Begin func :20 bytes
+15   a = 0
+16   t3 = a<10
+17   L4:
+18   ifZ t3 GOTO __ ;
+19   1 = LCall foo
+20   t4 = a+b
+21   a = t4
+22   GOTO L4
+23   L5: Return;
+0    foo
+1    	 Begin func :24 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+1
+11   t2 = a+t1
+12   	Return t2
+13   main
+14   	 Begin func :20 bytes
+15   a = 0
+16   t3 = a<10
+17   L3:
+18   ifZ t3 GOTO __ ;
+19   1 = LCall foo
+20   t4 = a+b
+21   a = t4
+22   GOTO L3
+23   	Return;
+0    foo
+1    	 Begin func :24 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+1
+11   t2 = a+t1
+12   	Return t2
+13   main
+14   	 Begin func :20 bytes
+15   a = 0
+16   t3 = a<10
+17   L3:
+18   ifZ t3 GOTO __ ;
+19   1 = LCall foo
+20   t4 = a+b
+21   a = t4
+22   GOTO L3
+23   	Return;
+0    foo
+1    	 Begin func :24 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+1
+11   t2 = a+t1
+12   	Return t2
+13   main
+14   	 Begin func :20 bytes
+15   a = 0
+16   L3:
+17   1 = LCall foo
+18   t3 = a+b
+19   a = t3
+20   t4 = a<10
+21   ifNZ t4 GOTO L2 ;
+22   	Return;
+0    foo
+1    	 Begin func :24 bytes
+2    a = 23
+3    t0 = a==23
+4    ifZ t0 GOTO L1 ;
+5    a = 10
+6    		GOTO _NEXT_ ;
+7    L1 :
+8    a = 19
+9    L2 : if-else block end
+10   t1 = a+1
+11   t2 = a+t1
+12   	Return t2
+13   main
+14   	 Begin func :20 bytes
+15   a = 0
+16   L3:
+17   b = LCall foo
+18   t3 = a+b
+19   a = t3
+20   t4 = a<10
+21   ifNZ t4 GOTO L2 ;
+22   	Return;
