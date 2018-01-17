@@ -15,6 +15,7 @@ typedef struct node {
     char* trueLabel;
     char* falseLabel;
 	int printHeader;
+    int params;
 	Type type;
 } node;
 

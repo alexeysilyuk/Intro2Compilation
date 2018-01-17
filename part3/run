@@ -41,5 +41,5 @@ fi
 cc -o project y.tab.c -ll -Ly;
 ./project < test.t
 
-rm lex.yy.c project y.output y.tab.h y.tab.c
+rm lex.yy.c project y.tab.h y.tab.c
 

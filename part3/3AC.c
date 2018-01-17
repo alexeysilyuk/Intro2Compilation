@@ -2,17 +2,24 @@
 
 
 // Stack
-char st[10][10];
+char st[100][10];
 int top = 0;
-char i_l[2] = "0";
+int i_l;
 char temp[2] = "t";
 char Label[5];
+char TLable[5];
+int TTop=0;
 int label[20];
 int labels[5];
 int Inum = 0, Itop = 0;
 char next[5];
 int currentLine = -1;
 char quadBuffer[50];
+char TFstack[10][5];
+char boolbuffer[7]="";
+int TFindex=0;
+int ifCondExprs=1;
+int initT;
 int funcBytes;
 
 //void if_f();
@@ -71,9 +78,8 @@ void push(char* yytext) {
 }
 
 char* freshVar() {
-    strcpy(temp, "t");
-    strcat(temp, i_l);
-    i_l[0]++; //fix this
+    sprintf(temp, "t%d",i_l);
+    i_l++; //fix this
     funcBytes+=4;
     return temp;
 }
@@ -97,9 +103,10 @@ void codeGen() {
 
 
 void printStack()  {
-    while(top>=0) {
-        printf("%s\n", st[top]);
-        top--;
+    int temp = top;
+    while(temp>=0) {
+        printf("%s\n", st[temp]);
+        temp--;
     }
 }
 
@@ -129,25 +136,30 @@ char* freshLabel(){
 
     return Label;
 }
+char* freshTLabel(){
+    char itoa[6];
+    strcpy(TLable,"");
+    sprintf(itoa, "T%d", TTop++);
+    strcat(TLable,itoa);
+    return TLable;
+}
+
 
 void if_cond(){
+if(top>=0) {
     char temp_text[100] = "ifZ ";
-    strcat(temp_text,st[top--]);
-    strcat(temp_text," GOTO ");
-    strcat(temp_text,freshLabel());
-    strcat(temp_text," ;");
+    strcat(temp_text, st[top--]);
+    strcat(temp_text, " GOTO ");
+    strcat(temp_text, "ElseLabel or BlockEnd");
     codeLineHead->gotoL = Itop;
     genLine(temp_text);
+}
 }
 
 void else_cond(){
     char temp_text[100] = "";
-    char itoa[2];
-    sprintf(itoa, "L%d", label[Itop--]);
-    strcat(temp_text,itoa);
-    strcat(temp_text," :");
+    strcat(temp_text,"ElseLabel:");
     genLine(temp_text);
-    //printf("GOTOL %d\n",codeLineHead->gotoL);
     codeLineHead->gotoL = Itop;
 }
 
@@ -158,7 +170,7 @@ void printFreshLable(){
 void endBlock(){
     char temp_text[100] = "";
     strcat(temp_text,freshLabel());
-    strcat(temp_text," : if-else block end");
+    strcat(temp_text," : BlockEnd");
     genLine(temp_text);
 }
 
@@ -168,6 +180,7 @@ void gotoNext(){
     strcat(temp_text,next);
     strcat(temp_text," ;");
     genLine(temp_text);
+
 }
 
 int nextquad(){
@@ -216,15 +229,15 @@ int printCode()
 void while_cond(){
 
     char temp_text[100]="";
-    strcat(temp_text,freshLabel());
-    strcat(temp_text,":");
-    genLine(temp_text);
-    strcpy(temp_text,"");
-    strcat(temp_text,"ifZ ");
-    strcat(temp_text,st[top--]);
-    strcat(temp_text," GOTO __");
-    strcat(temp_text," ;");
-    genLine(temp_text);
+        strcat(temp_text, freshLabel());
+        strcat(temp_text, ":");
+        genLine(temp_text);
+        strcpy(temp_text, "");
+        strcat(temp_text, "ifZ ");
+        strcat(temp_text, st[top--]);
+        strcat(temp_text, " GOTO WHILE END");
+        genLine(temp_text);
+
 
 }
 
@@ -233,33 +246,43 @@ void while_end_block(){
     char temp_text[100] = "", buffer[50]="";
     strcat(temp_text,"GOTO ");
     strcat(temp_text,"L");
-    sprintf(buffer,"%d",labels[Inum]);
+    sprintf(buffer,"%d",labels[Inum-1]);
     labels[Inum] = labels[Inum-1];
-    //label[Itop] = Inum--;
+    label[Itop] = Inum--;
     strcat(temp_text,buffer);
     genLine(temp_text);
+    strcpy(temp_text,"WHILE END:");
+    genLine(temp_text);
+
 }
 
 void do_while_block()
 {
 
-    char temp_text[100]="";
-    strcat(temp_text,freshLabel());
+    char temp_text[100]="",lbl[5]="";
+    strcpy(lbl,freshLabel());
+    //strcpy(label[Itop++],lbl);
+    strcat(temp_text,lbl);
     strcat(temp_text,":");
     genLine(temp_text);
+    push(lbl);
 }
 
 void do_while_cond()
 {
-    char temp_text[100]="", buffer[50]="";
-    strcat(temp_text,"ifNZ ");
-    strcat(temp_text,st[top--]);
-    strcat(temp_text," GOTO ");
-    strcat(temp_text,"L");
-    sprintf(buffer,"%d",Itop--);
-    strcat(temp_text, buffer);
-    strcat(temp_text," ;");
-    genLine(temp_text);
+
+    if(Itop>0) {
+
+        char temp_text[100] = "", buffer[50]="";
+        sprintf(temp_text,"ifNz %s GOTO ",st[top--]);
+        strcat(temp_text,"L");
+        sprintf(buffer,"%d",labels[Inum]);
+        labels[Inum] = labels[Inum];
+        label[Itop] = Inum--;
+        strcat(temp_text,buffer);
+        genLine(temp_text);
+        
+    }
 }
 
 void for_block_start()
@@ -272,12 +295,14 @@ void for_block_start()
 
 void for_expr_cond()
 {
-    char temp_text[100]="";
-    strcat(temp_text,"ifZ ");
-    strcat(temp_text,st[top--]);
-    strcat(temp_text," GOTO forNEXT");
-    strcat(temp_text," ;");
-    genLine(temp_text);
+    if(top>0) {
+        char temp_text[100] = "";
+        strcat(temp_text, "ifZ ");
+        strcat(temp_text, st[top--]);
+        strcat(temp_text, " GOTO forNEXT");
+        strcat(temp_text, " ;");
+        genLine(temp_text);
+    }
 }
 
 void createFreshLabel() {
@@ -349,7 +374,6 @@ void funcReturn(){
     strcat(buffer,st[top]);
     top--;
     genLine(buffer);
-
 }
 
 void funcCall(char* funcName)
@@ -368,4 +392,196 @@ void voidFuncReturn(){
 }
 
 
-void funcCallParams(){}
+int funcCallparams(node *root)
+{
+    if(root)
+    {
+        if(strcmp("FUNC_PARAM",root->token)==0)
+        {
+            return 1+funcCallparams(root->right);
+        }
+        else
+            return funcCallparams(root->right);
+    }
+}
+
+void pushFcallParam(char* var)
+{
+    char buffer[30]="";
+    sprintf(buffer,"PushParam %s",var);
+    genLine(buffer);
+}
+
+int funcCallParams(node* tree){
+    int params = funcCallparams(tree);
+    int i;
+    for(i=0;i<params;i++)
+        if(top>0){
+        pushFcallParam(st[top--]);
+    }
+
+return params;
+}
+void popFuncCallParams(int params){
+        char buffer[30] ="";
+        sprintf(buffer,"Pop Params %d",params*4);
+        genLine(buffer);
+
+}
+
+
+
+void shortCircuitAnd(){
+    char temp_text[100]="",temp[5]="";
+    printStack();
+    if(top>=0) {
+        strcat(temp_text, "ifZ ");
+        strcat(temp_text, st[top]);
+        strcat(temp_text, " GOTO ");
+        sprintf(temp, "falseLable");
+        strcat(temp_text, temp);
+        genLine(temp_text);
+        //printf("%s %s\n",TFstack[TFindex],st[top]);
+
+    }
+}
+void shortCircuitOr(){
+    char temp_text[100]="",temp[5]="";
+    printStack();
+    if(top>=0) {
+        strcat(temp_text, "ifNz ");
+        strcat(temp_text, st[top]);
+        strcat(temp_text, " GOTO ");
+        sprintf(temp, "trueLable");
+        strcat(temp_text, temp);
+        genLine(temp_text);
+        //printf("%s %s\n",TFstack[TFindex],st[top]);
+
+    }
+}
+
+void ANDcond(){
+    char buffer[30]="",var[5]="";
+    if(top>1)
+    {
+        strcpy(var,freshVar());
+        sprintf(buffer,"%s = %s && %s",var,st[top--],st[top--]);
+        genLine(buffer);
+        push(var);
+    }
+}
+
+
+
+
+void ORcond(){
+    char buffer[30]="",var[5]="";
+    if(top>1)
+    {
+        strcpy(var,freshVar());
+        sprintf(buffer,"%s = %s || %s",var,st[top--],st[top--]);
+        genLine(buffer);
+        push(var);
+    }
+}
+void idArrayDeclarator(char* varname){
+    //printf("---idArrayDeclarator---\n");
+    //printStack();
+    //printf("---idArrayDeclarator END---\n");
+}
+void idArrayInitializator(char* varname){
+
+    char freshV[30]="",buffer[50]="";
+    if(top>0) {
+
+        strcpy(freshV, freshVar());
+
+        sprintf(buffer, "%s = %s*4", freshV, st[top--]);
+        genLine(buffer);
+
+        push(freshV);
+        strcpy(freshV, freshVar());
+        sprintf(buffer, "%s = %s+%s", freshV, st[top--], st[top--]);
+
+        genLine(buffer);
+
+        push(freshV);
+
+        strcpy(freshV, freshVar());
+        sprintf(buffer, "%s = *(%s)", freshV,st[top--]);
+        genLine(buffer);
+        push(freshV);
+        //push(buffer);
+        //push(buffer);
+
+        //printStack();
+
+        }
+
+    //printf("%s = *(%s)\n",varname,st[top--]);
+
+}
+
+void unaryAssignment(char* op, char* var){
+    top--;
+    char buffer[50]="";
+    sprintf(buffer,"%s%s",op,var);
+    push(buffer);
+}
+
+void funcEndBlock(char* funcName){
+    char temp_text[100] = "";
+    sprintf(temp_text,"END FUNC %s",funcName);
+    genLine(temp_text);
+}
+
+
+void printTree2(node* tree, int space) {
+    int i;
+
+    if(tree->printHeader==1)
+    {
+        for (i= 0; i< space; i++)
+        { printf("   "); }
+        printf("%s | %d\n", tree->token,tree->type);
+
+        space++;
+
+        if (tree->left)
+        {   printTree(tree->left, space);  }
+        if (tree->right)
+        {   printTree(tree->right, space);}
+
+
+    }
+    else{
+        if (tree->left) {   printTree(tree->left, space); }
+        if (tree->right){   printTree(tree->right, space); }
+
+    }
+}
+
+
+
+
+
+void createTLables(node* tree)
+{
+    char buffer[30]="";
+
+    int initt= initT,i;
+    //printf("top t: %d\nexprs in this IF expr - %d\n",i_l,ifCondExprs);
+    for(i=0;i<ifCondExprs-1;i++){
+        //printf("T%d\n",initt);
+        initt++;
+    }
+    //if(strcmp()==0)
+    //freshTLabel();
+    //strcpy(TFstack[TFindex++],topT);
+    //sprintf(buffer,"ifZ %s GOTO",topT);
+    //genLine(buffer);
+    //genLine(buffer);
+    //sprintf(buffer,"ifNz %s ->%s=1",topT,TLable);
+    //genLine(buffer);
+
+}

@@ -27,6 +27,12 @@ node* mknode (char* token, node* left, node* right, int printHeader, Type type);
 	{
 		struct BackpatchList* 	nextList;
 	} stmt;
+
+	struct {
+		int maxLable;
+		int minLable;
+	}if_jumps;
+
 } 
 
 %start main
@@ -57,7 +63,7 @@ node* mknode (char* token, node* left, node* right, int printHeader, Type type);
 %type <node> function_call_parameters_list  list_of_declarators declarator_initialization initializator complex_expression
 %type <node> basic_expression  terminal_const_values literals declarator params_types_list
 %type <node> array_size  type operator bitwise_operators expression other ID lp rp inc_dec
-%type <mark> marker jump_marker
+
 %%
 
 
@@ -92,12 +98,13 @@ functions
 	;
 
 user_function
-		: type ID  lp rp {func($2->token);} code_block
+		: type ID lp rp {push($2->token); func($2->token);} code_block
 { $$ = mknode($2->token,
-			  mknode($2->token, $1, $2, 0,$1->type),  $6, 0,$1->type); 	updateFuncBytes($2->token);}
-| type ID lp params_types_list rp {func($2->token);} code_block
+			  mknode($2->token, $1, $2, 0,$1->type),  $6, 0,$1->type); 	updateFuncBytes($2->token); funcEndBlock($2->token);}
+| type ID  lp params_types_list rp {push($2->token); func($2->token);} code_block
 { $$ = mknode($2->token, mknode("params_types_list", mknode($2->token, $1, $2,0,$1->type), $4,0,$1->type), 	$7,0,$1->type);
 updateFuncBytes($2->token);
+funcEndBlock($2->token);
 }
 /*|VOID MAIN lp params_types_list rp code_block
     { $$ = mknode("(VOID MAIN",mknode("(",$3,$4,0,UNTYPED),mknode(")",$6,$5,0,UNTYPED),1,UNTYPED);   }
@@ -112,7 +119,7 @@ line_statement
 	| declarator_initialization ';' { $$ = mknode("DECLARATION_INIT", $1, NULL,0,$1->type); }
 	| RETURN ';' { $$ = mknode("return-void", NULL, NULL,1,UNTYPED); voidFuncReturn(); }
 	| RETURN expression ';' { $$ = mknode("return", $2, NULL, 1,$2->type); funcReturn(); }
-	| function_call ';' { $$ = mknode("function_call", $1, NULL,0,UNTYPED); }
+	| function_call ';' { $$ = mknode("function_call", $1, NULL,0,UNTYPED); funcCall($1->left->token); }
 	;
 
 
@@ -123,7 +130,7 @@ declaration
 	;
 
 builtin_functions
-	: if_block { $$ = mknode("if_block", $1, NULL, 0,UNTYPED); }
+	: {ifCondExprs=0; initT=i_l;} if_block { $$ = mknode("if_block", $2, NULL, 0,UNTYPED); }
 	| loop_functions { $$ = mknode("loop_functions", $1, NULL,0,UNTYPED); }
 	;
 
@@ -134,11 +141,12 @@ loop_functions
 	;
 
 if_block
-	: IF lp boolean_expr rp {if_cond(); } line_statement {gotoNext(); } else_block
+	: IF lp  boolean_expr rp {	if_cond();	} line_statement {gotoNext(); } else_block
 		{ $$ = mknode("(IF", mknode("(", $2, $3, 0,UNTYPED), mknode(")", 
 			mknode("BLOCK",$8,mknode("}",NULL,NULL,1,UNTYPED),1,UNTYPED)
-			, $6, 1,UNTYPED), 1,UNTYPED); endBlock();}
-	| IF lp boolean_expr rp {if_cond();} code_block {gotoNext(); } else_block
+			, $6, 1,UNTYPED), 1,UNTYPED); endBlock();
+			}
+	| IF  lp  boolean_expr rp {	if_cond(); } code_block {gotoNext(); } else_block
 		{ $$ = mknode("(IF", mknode("(", $2, $3, 0,UNTYPED), mknode("BLOCK", $6, $8, 1,UNTYPED), 1,UNTYPED); endBlock();}
 	;
 
@@ -178,18 +186,18 @@ for_block_inits
 	;
 
 for_block_single_init
-	:ID ASSIGNMENT initializator { $$ = mknode("=", $1, $3, 1,UNTYPED); varAssign(); }
+	:ID {push($1->token); } ASSIGNMENT initializator { $$ = mknode("=", $1, $4, 1,UNTYPED); varAssign(); }
 	;
 
 for_block_inits_update
-	: ID ASSIGNMENT initializator
-		{ $$ = mknode("=", $1, $3, 1,UNTYPED); varAssign(); }
+	: ID  ASSIGNMENT initializator
+		{push($1->token); $$ = mknode("=", $1, $3, 1,UNTYPED); varAssign(); }
 	| ID ASSIGNMENT initializator ',' for_block_inits_update
-		{ $$ = mknode(", ", mknode("=", $1, $3, 1,UNTYPED), $5, 1,UNTYPED); varAssign(); }
-	| ID inc_dec
-		{ $$ = mknode($2->token, $1, NULL, 1,UNTYPED);  }
-	| ID inc_dec ',' for_block_inits_update 
-		{ $$ = mknode($2->token, $1, $4, 1,UNTYPED);  }
+		{push($1->token); $$ = mknode(", ", mknode("=", $1, $3, 1,UNTYPED), $5, 1,UNTYPED); varAssign(); }
+	| ID  inc_dec
+		{push($1->token); $$ = mknode($2->token, $1, NULL, 1,UNTYPED);  }
+	| ID inc_dec ',' for_block_inits_update
+		{ push($1->token); $$ = mknode($2->token, $1, $4, 1,UNTYPED);  }
 	;
 
 for_block_boolean_expr
@@ -204,21 +212,20 @@ expression
 
 
 boolean_expr
-		: boolean_expr AND  boolean_expr_complex { $$ = mknode("&&", $1,  $3, 1,BOOLEAN_TYPE);
-
-		 }
-		| boolean_expr OR boolean_expr_complex { $$ = mknode("||", $1,  $3, 1,BOOLEAN_TYPE); }
-		| boolean_expr_complex { $$ = mknode("BOOLEAN_EXPR", $1, NULL, 0,BOOLEAN); }
-		| bool_unary_op boolean_expr_complex { $$ = mknode("!", NULL, $2, 1,UNTYPED); }
+		: boolean_expr  AND boolean_expr_complex  { $$ = mknode("&&", $1,  $3, 1,BOOLEAN_TYPE);  ANDcond();}
+		| boolean_expr  OR  boolean_expr_complex  { $$ = mknode("||", $1,  $3, 1,BOOLEAN_TYPE); ORcond(); }
+		| boolean_expr_complex  { $$ = mknode("BOOLEAN_EXPR", $1, NULL, 0,BOOLEAN);  }
+		| bool_unary_op boolean_expr_complex { $$ = mknode("!", NULL, $2, 1,UNTYPED); unaryAssignment($$->token,st[top]); }
 		;
 
 boolean_expr_complex
-		: boolean_expr_simple bool_binary_op 
+		:  boolean_expr_simple bool_binary_op
 		 boolean_expr_complex
 			{ $$ = mknode($2->token, $1, $3, 1,$1->type);
 				codeGen();
+				ifCondExprs++;
 			}
-		| boolean_expr_simple 
+		|  boolean_expr_simple
 			{ $$ = mknode("BOOLEAN_EXPR_COMPLEX", $1, NULL, 0,$1->type); }
 		;
 
@@ -238,22 +245,22 @@ bool_binary_op
 		;
 
 bool_unary_op
-		: NOT { $$ = mknode($1, NULL, NULL,1,UNTYPED); push("!"); }
+		: NOT { $$ = mknode($1, NULL, NULL,1,UNTYPED);  }
 		;
 
 
 
 
 function_call
-	: ID  lp rp { funcCall($1->token); }
-		{ $$ = mknode($1->token, NULL, NULL,1,$1->type); }
-	| ID lp function_call_parameters_list rp { funcCall($1->token); }
-{ $$ = mknode($1->token, NULL, $3,1,$1->type); }
+	: ID lp rp
+		{ $$ = mknode($1->token, NULL, NULL,1,$1->type); push($1->token);  funcCall($1->token); }
+	| ID lp function_call_parameters_list rp
+{  $$ = mknode($1->token, NULL, $3,1,$1->type); $3->params = funcCallParams($3); push($1->token); funcCall($1->token); popFuncCallParams($3->params);}
 	;
 
 function_call_parameters_list 
 	: complex_expression 
-		{ $$ = mknode("FUNC_PARAM", $1, NULL, 1,$1->type); }
+		{ $$ = mknode("FUNC_PARAM", $1, NULL, 1,$1->type);}
 	| complex_expression ',' function_call_parameters_list
 		{ $$ = mknode("FUNC_PARAM", $1, $3, 1,$1->type); }
 	;
@@ -270,50 +277,50 @@ list_of_declarators
 	;
 
 declarator_initialization
-	: declarator ASSIGNMENT initializator 
-		{ $$ = mknode("DECL_INIT", $1, $3, 1,UNTYPED);
-			varAssign();
-		}
+	: declarator  ASSIGNMENT initializator
+		{ $$ = mknode("DECL_INIT", $1, $3, 1,UNTYPED); varAssign();}
 	| declarator 
-		{ $$ = mknode("DECL", $1, NULL, 0,UNTYPED); }
+		{ $$ = mknode("DECL", $1, NULL, 0,UNTYPED); top--;}
 	;
 
 
 initializator
-	: expression { $$ = mknode("INIT", $1, NULL,0,$1->type); }
+	: expression  { TFindex=0; $$ = mknode("INIT", $1, NULL,0,$1->type); }
 	;
 
 
 
 complex_expression
-	: basic_expression 
-		{ $$ = mknode("complex_expression", $1,  NULL,0,$1->type); }
+	:  basic_expression
+		{ $$ = mknode("complex_expression", $1,  NULL,0,$1->type);}
 	| basic_expression operator complex_expression 
 		{
             $$ = mknode("complex_expression", $1, $3, 1, $2->type);
 				codeGen();
              }
 	| operator complex_expression 
-		{ $$ = mknode("complex_expression", NULL, $2, 1,$2->type); }
+		{ $$ = mknode("complex_expression", NULL, $2, 1,$2->type); unaryAssignment($1->token,$2->token); }
 	
 	;
 
 basic_expression
-	: function_call 
+	: function_call
 		{ $$ = mknode("function_call", $1,  NULL,0,UNTYPED); }
-	| terminal_const_values
-		{ $$ = mknode($1->token, $1, NULL,0,$1->type); push($1->token); }
+	|  terminal_const_values
+		{push($1->token);  $$ = mknode($1->token, $1, NULL,0,$1->type); }
 	| ID '[' array_size ']'
-		{ $$ = mknode("EXPR_ID[]", $1, $3,0,UNTYPED);
-		 } 
-	| ID 
-		{ $$ = mknode("EXPR_ID", $1, NULL, 1,UNTYPED);  }
-	| '|' ID '|' 
-		{ $$ = mknode("|ID|", $2, NULL,0,UNTYPED); }
+		{  push($1->token); $$ = mknode("EXPR_ID[]", $1, $3,0,UNTYPED);
+		idArrayInitializator($1->token);
+			}
+	| ID
+		{ push($1->token); $$ = mknode("EXPR_ID", $1, NULL, 1,UNTYPED);  }
+	| '|' ID  '|'
+		{ char buffer[30]=""; sprintf(buffer,"|%s|",$2->token);
+			push(buffer); $$ = mknode("|ID|", $2, NULL,0,UNTYPED); }
 	| lp boolean_expr rp 
-		{ $$ = mknode("SIMPLE_EXPRESSION", NULL, $2, 0,UNTYPED); }
+		{ $$ = mknode("SIMPLE_EXPRESSION", NULL, $2, 0,UNTYPED);  }
 	| bitwise_operators  basic_expression 
-		{ $$ = mknode("bitwise_operator", $1, $2, 0,UNTYPED); } 
+		{ $$ = mknode("bitwise_operator", $1, $2, 0,UNTYPED); unaryAssignment($1->token,st[top]);}
 	;
  
 
@@ -345,20 +352,20 @@ literals
 
 
 declarator
-	: ID { $$ = mknode("ID", $1, NULL, 0,UNTYPED); }
+	: ID {push($1->token); } { $$ = mknode("ID", $1, NULL, 0,UNTYPED); }
 	| declarator '[' ']' 
 		{ $$ = mknode("ARRAY", $1, NULL,0,UNTYPED); }
 	| declarator '[' array_size ']'  
-		{ $$ = mknode("ID-ARRAY[size]", $1,  $3, 0,UNTYPED); }
+		{   $$ = mknode("ID-ARRAY[size]", $1,  $3, 0,UNTYPED);     }
 	| bitwise_operators ID
-		{ $$ = mknode("BIT_OP", $1,  $2, 0,UNTYPED); }
+		{ $$ = mknode("BIT_OP", $1,  $2, 0,UNTYPED); unaryAssignment($1->token,$2->token);}
 	;
 
 params_types_list
 	: type { $$ = mknode($1->token, $1, NULL,0,$1->type); }
 	| type ',' params_types_list  { $$ = mknode("TYPE", $1, $3, 0,$1->type); }
-	| type ID { $$ = mknode("TYPE", $1, $2, 0,$1->type); }
-	| type ID ',' params_types_list
+	| type ID  { $$ = mknode("TYPE", $1, $2, 0,$1->type); }
+	| type ID  ',' params_types_list
 		{ $$ = mknode($1->token, mknode("TYPE", $1, $2, 0,UNTYPED),$4, 0,$1->type); }
 	;
 	
@@ -368,7 +375,7 @@ array_size
 	: array_size ',' INT_CONSTANT_VALUE 
 		{ $$ = mknode("ARRAY_SIZE", $1, mknode(yytext, NULL, NULL,  1,UNTYPED), 1,UNTYPED); }
 	| complex_expression 
-		{ $$ = mknode("ARRAY_SIZE", $1, NULL,0,UNTYPED); }
+		{ $$ = mknode("ARRAY_SIZE", $1, NULL,0,UNTYPED);}
 	;
 
 
@@ -391,8 +398,8 @@ operator
 	;
 
 bitwise_operators
-	: BITWISE_AND { $$ = mknode($1, NULL, NULL, 1, BITWISE_AND_TYPE); push("&&"); }
-	| BITWISE_XOR { $$ = mknode($1, NULL, NULL, 1, BITWISE_XOR_TYPE); push("||");}
+	: BITWISE_AND { $$ = mknode($1, NULL, NULL, 1, BITWISE_AND_TYPE); }
+	| BITWISE_XOR { $$ = mknode($1, NULL, NULL, 1, BITWISE_XOR_TYPE); }
 	;
 
 
@@ -410,19 +417,14 @@ rp
 	;
 
 ID
-	: IDENTIFIER { $$ = mknode($1, NULL, NULL,1,ID_TYPE); push($1); }
-	| MAIN	{ $$ = mknode($1, NULL, NULL,1,UNTYPED); push("MAIN"); }
+	: IDENTIFIER { $$ = mknode($1, NULL, NULL,1,ID_TYPE); }
+	| MAIN	{ $$ = mknode($1, NULL, NULL,1,UNTYPED); push("MAIN"); top--;}
 	;
 inc_dec
 	: INCR { $$ = mknode($1, NULL, NULL,1,UNTYPED); }
 	| DECR { $$ = mknode($1, NULL, NULL,1,UNTYPED); }
 
 
-marker: {	$$.quad = nextquad();};
-jump_marker: {	/*$$.quad = nextquad();*/
-	//sprintf(quadBuffer,"NEXT");
-	//$$.nextList = addToList(NULL, genLine(quadBuffer));
-};
 %%
 #include "lex.yy.c"
 
